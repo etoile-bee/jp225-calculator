@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="JP225 Cadre" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Cadre FTMO · JP225</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>Cadre FTMO · JP225</h1>
+        <p class="subtitle">Marge ≠ risque. Prépare la taille, fractionne tes entrées et vois l'equity avant de cliquer.</p>
+      </div>
+      <div class="version">v1 · mémoire</div>
+    </header>
+
+    <section id="installHint" class="install-hint hidden">
+      <span>Pour l’installer sur iPhone : Safari → Partager → <strong>Sur l’écran d’accueil</strong>.</span>
+      <button id="dismissInstall" class="icon-btn" aria-label="Masquer">×</button>
+    </section>
+
+    <main>
+      <section class="card hero-card">
+        <div class="section-kicker">COMPTE</div>
+        <div class="grid-2">
+          <label class="field">
+            <span>Solde / balance ($)</span>
+            <input id="balance" class="big-input mono" inputmode="decimal" value="100000" />
+          </label>
+          <label class="field">
+            <span>Niveau Nikkei actuel</span>
+            <input id="currentLevel" class="big-input mono" inputmode="decimal" value="65000" />
+          </label>
+        </div>
+
+        <div class="segmented" role="group" aria-label="Sens du trade">
+          <button id="buyBtn" class="seg active" data-dir="1">Achat ↑</button>
+          <button id="sellBtn" class="seg" data-dir="-1">Vente ↓</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <div class="section-kicker">CONVERTISSEUR</div>
+            <h2>$ de marge ↔ lots</h2>
+          </div>
+          <span class="pill cyan">FTMO Swing</span>
+        </div>
+
+        <div class="grid-2 converter-grid">
+          <label class="field">
+            <span>$ à immobiliser</span>
+            <input id="marginWanted" class="big-input mono accent-input" inputmode="decimal" value="1000" />
+          </label>
+          <label class="field">
+            <span>Lots</span>
+            <input id="lotsWanted" class="big-input mono" inputmode="decimal" value="0" />
+          </label>
+        </div>
+
+        <div class="quick-row" aria-label="Montants rapides">
+          <button class="chip margin-chip" data-margin="150">150 $</button>
+          <button class="chip margin-chip" data-margin="300">300 $</button>
+          <button class="chip margin-chip" data-margin="500">500 $</button>
+          <button class="chip margin-chip active" data-margin="1000">1 000 $</button>
+          <button class="chip margin-chip" data-margin="2000">2 000 $</button>
+        </div>
+
+        <div class="result-panel compact">
+          <div class="result-row major">
+            <span>À saisir sur MT5</span>
+            <strong id="converterLotsOut" class="mono">— lots</strong>
+          </div>
+          <div class="divider"></div>
+          <div class="result-row"><span>Marge par lot</span><strong id="marginPerLotOut" class="mono">—</strong></div>
+          <div class="result-row"><span>Valeur de 1 point / lot</span><strong id="pointPerLotOut" class="mono cyan-text">—</strong></div>
+          <div class="result-row"><span>Exposition notionnelle</span><strong id="converterExposureOut" class="mono">—</strong></div>
+        </div>
+
+        <button id="addConverterPosition" class="primary-btn">+ Ajouter ce lot au plan</button>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <div class="section-kicker">PLAN DE POSITION</div>
+            <h2>Entrées fractionnées & renforcements</h2>
+          </div>
+          <button id="addEntry" class="small-btn">+ Entrée</button>
+        </div>
+
+        <div id="entries" class="entries"></div>
+
+        <div class="summary-strip">
+          <div><span>Lots total</span><strong id="totalLots" class="mono">—</strong></div>
+          <div><span>Prix moyen</span><strong id="avgEntry" class="mono">—</strong></div>
+          <div><span>$/point total</span><strong id="pointTotal" class="mono cyan-text">—</strong></div>
+        </div>
+
+        <div class="grid-2 stop-grid">
+          <label class="field">
+            <span>Stop Loss (prix)</span>
+            <input id="stopLoss" class="big-input mono danger-input" inputmode="decimal" value="64500" />
+          </label>
+          <div class="risk-box">
+            <span>Risque au SL</span>
+            <strong id="riskDollar" class="mono danger-text">—</strong>
+            <small id="riskPct">— du compte</small>
+          </div>
+        </div>
+
+        <div id="riskMessage" class="status-card"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <div class="section-kicker">SIMULATEUR</div>
+            <h2>P&amp;L / equity selon le Nikkei</h2>
+          </div>
+          <span id="simDirectionBadge" class="pill">Achat</span>
+        </div>
+
+        <label class="field">
+          <span>Niveau Nikkei simulé</span>
+          <input id="simLevel" class="mega-input mono" inputmode="decimal" value="65500" />
+        </label>
+
+        <div class="quick-row sim-chips" aria-label="Variations rapides">
+          <button class="chip sim-chip" data-delta="-1000">-1000</button>
+          <button class="chip sim-chip" data-delta="-500">-500</button>
+          <button class="chip sim-chip" data-delta="-200">-200</button>
+          <button class="chip sim-chip" data-delta="200">+200</button>
+          <button class="chip sim-chip" data-delta="500">+500</button>
+          <button class="chip sim-chip" data-delta="1000">+1000</button>
+        </div>
+
+        <div class="sim-hero">
+          <span>P&amp;L net estimé</span>
+          <strong id="simPnl" class="mono">—</strong>
+          <small id="simMove">—</small>
+        </div>
+
+        <div class="result-panel">
+          <div class="result-row"><span>Equity simulée</span><strong id="simEquity" class="mono">—</strong></div>
+          <div class="result-row"><span>Marge requise</span><strong id="simMargin" class="mono">—</strong></div>
+          <div class="result-row"><span>Marge libre</span><strong id="simFreeMargin" class="mono">—</strong></div>
+          <div class="result-row"><span>Niveau de marge</span><strong id="simMarginLevel" class="mono">—</strong></div>
+          <div class="result-row"><span>Exposition</span><strong id="simExposure" class="mono">—</strong></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <div class="section-kicker">AU NIVEAU ACTUEL</div>
+            <h2>Position & marge</h2>
+          </div>
+        </div>
+        <div class="result-panel no-top-margin">
+          <div class="result-row"><span>P&amp;L ouvert estimé</span><strong id="currentPnl" class="mono">—</strong></div>
+          <div class="result-row"><span>Equity actuelle</span><strong id="currentEquity" class="mono">—</strong></div>
+          <div class="result-row"><span>Marge utilisée</span><strong id="currentMargin" class="mono">—</strong></div>
+          <div class="result-row"><span>Marge libre</span><strong id="currentFreeMargin" class="mono">—</strong></div>
+          <div class="result-row"><span>Niveau de marge</span><strong id="currentMarginLevel" class="mono">—</strong></div>
+        </div>
+      </section>
+
+      <details class="card settings-card">
+        <summary>
+          <div>
+            <div class="section-kicker">RÉGLAGES</div>
+            <h2>FTMO / JP225.cash & frais</h2>
+          </div>
+          <span class="chev">⌄</span>
+        </summary>
+
+        <div class="settings-body">
+          <div class="grid-2">
+            <label class="field"><span>USD/JPY</span><input id="usdJpy" class="input mono" inputmode="decimal" value="156.5" /></label>
+            <label class="field"><span>Levier indice</span><input id="leverage" class="input mono" inputmode="decimal" value="15" /></label>
+            <label class="field"><span>Taille contrat</span><input id="contractSize" class="input mono" inputmode="decimal" value="10" /></label>
+            <label class="field"><span>Pas de lot</span><input id="lotStep" class="input mono" inputmode="decimal" value="0.01" /></label>
+            <label class="field"><span>Risque perso max (%)</span><input id="riskLimitPct" class="input mono" inputmode="decimal" value="1" /></label>
+            <label class="field"><span>Spread estimé (pts)</span><input id="spreadPts" class="input mono" inputmode="decimal" value="0" /></label>
+            <label class="field"><span>Commission $ / lot / côté</span><input id="commissionSide" class="input mono" inputmode="decimal" value="0" /></label>
+            <label class="field"><span>Swap $ / lot / nuit</span><input id="swapPerLotNight" class="input mono" inputmode="decimal" value="0" /></label>
+            <label class="field"><span>Nuits prévues</span><input id="nights" class="input mono" inputmode="numeric" value="0" /></label>
+          </div>
+
+          <div class="fees-box">
+            <div class="result-row"><span>Spread estimé</span><strong id="spreadCost" class="mono">—</strong></div>
+            <div class="result-row"><span>Commission aller-retour</span><strong id="commissionCost" class="mono">—</strong></div>
+            <div class="result-row"><span>Swap estimé</span><strong id="swapCost" class="mono">—</strong></div>
+            <div class="result-row"><span>Frais totaux estimés</span><strong id="totalCosts" class="mono amber-text">—</strong></div>
+          </div>
+
+          <p class="fineprint">Les swaps et spreads varient : saisis les valeurs visibles dans MT5 quand tu veux une estimation au plus près. Les paramètres sont mémorisés localement sur ton iPhone.</p>
+          <button id="resetApp" class="secondary-btn">Réinitialiser l’app</button>
+        </div>
+      </details>
+
+      <section class="note-card">
+        <strong>Lecture de la calculatrice</strong>
+        <p>La marge dit combien le trade immobilise. Le risque dit combien tu perds au Stop Loss. Ce sont deux choses différentes.</p>
+      </section>
+    </main>
+
+    <footer>
+      Outil de sizing et de gestion du risque. Vérifie toujours les spécifications de JP225.cash dans MT5 avant exécution.
+    </footer>
+  </div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
