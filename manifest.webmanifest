@@ -1,7 +1,7 @@
 {
-  "name": "Cadre FTMO · JP225",
-  "short_name": "JP225 Cadre",
-  "description": "Calculatrice mobile de marge, lots, risque, prix moyen et P&L pour JP225.cash.",
+  "name": "Dashboard",
+  "short_name": "Dashboard",
+  "description": "Dashboard local de sizing, risque, structure de plan et suivi réalisé.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

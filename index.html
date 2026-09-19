@@ -7,21 +7,726 @@
   <meta name="color-scheme" content="dark" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="JP225 Cadre" />
+  <meta name="apple-mobile-web-app-title" content="Dashboard" />
   <meta name="format-detection" content="telephone=no" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <link rel="stylesheet" href="./styles.css" />
-  <title>Cadre FTMO · JP225</title>
+  <style>
+:root {
+  --bg: #0b0f14;
+  --panel: #151b24;
+  --panel-2: #1a222d;
+  --border: #283341;
+  --text: #eef3f7;
+  --muted: #8f99aa;
+  --muted-2: #667182;
+  --cyan: #2bd5c4;
+  --green: #42d681;
+  --cyan-soft: rgba(43, 213, 196, .10);
+  --blue: #5ba4ff;
+  --blue-soft: rgba(91, 164, 255, .11);
+  --amber: #ffb11f;
+  --amber-soft: rgba(255, 177, 31, .11);
+  --red: #ff6b73;
+  --red-soft: rgba(255, 107, 115, .09);
+  --radius: 20px;
+  --radius-sm: 14px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+
+.app-shell {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: calc(24px + var(--safe-top)) 18px calc(34px + var(--safe-bottom));
+}
+
+.topbar {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+.topbar h1 { margin: 0; font-size: clamp(30px, 8vw, 42px); letter-spacing: -1.2px; line-height: 1.05; }
+.subtitle { color: var(--muted); font-size: 16px; line-height: 1.45; margin: 10px 0 0; max-width: 580px; }
+.version { flex: 0 0 auto; color: var(--cyan); font-weight: 800; font-size: 14px; padding-top: 6px; }
+
+main { display: grid; gap: 18px; }
+.card {
+  background: linear-gradient(180deg, rgba(24,31,41,.98), rgba(18,24,32,.98));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: inset 0 1px rgba(255,255,255,.015);
+}
+.hero-card { padding-top: 20px; }
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.card h2 { margin: 4px 0 0; font-size: 22px; letter-spacing: -.35px; }
+.section-kicker { font-size: 12px; color: var(--muted); letter-spacing: .11em; font-weight: 800; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: grid; gap: 7px; color: var(--muted); font-size: 14px; }
+.big-input, .mega-input, .input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel-2);
+  color: var(--text);
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.big-input { min-height: 72px; padding: 14px 16px; font-size: 29px; }
+.mega-input { min-height: 84px; padding: 14px 16px; font-size: 38px; text-align: center; }
+.input { min-height: 54px; padding: 11px 13px; font-size: 20px; }
+.big-input:focus, .mega-input:focus, .input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(43, 213, 196, .10); }
+.accent-input { border-color: rgba(255, 177, 31, .65); background: var(--amber-soft); }
+.danger-input { border-color: rgba(255, 107, 115, .35); }
+.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+
+.segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.seg {
+  min-height: 58px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 16px;
+  font-size: 19px;
+  font-weight: 800;
+}
+.seg.active { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-soft); }
+.seg[data-dir="-1"].active { color: var(--red); border-color: var(--red); background: var(--red-soft); }
+
+.pill { border: 1px solid var(--border); color: var(--muted); border-radius: 999px; padding: 7px 10px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.pill.cyan { border-color: rgba(43, 213, 196, .55); color: var(--cyan); background: var(--cyan-soft); }
+
+.quick-row { display: flex; gap: 8px; overflow-x: auto; padding: 13px 0 2px; scrollbar-width: none; }
+.quick-row::-webkit-scrollbar { display: none; }
+.chip {
+  min-height: 42px;
+  flex: 0 0 auto;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 750;
+}
+.chip.active { color: var(--amber); border-color: var(--amber); background: var(--amber-soft); }
+.chip:active { transform: translateY(1px); }
+
+.result-panel {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 15px;
+  background: rgba(9, 13, 18, .24);
+}
+.result-panel.compact { margin-top: 14px; }
+.result-panel.no-top-margin { margin-top: 0; }
+.result-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 8px 0; }
+.result-row span { color: var(--muted); font-size: 14px; }
+.result-row strong { text-align: right; font-size: 18px; }
+.result-row.major { padding: 2px 0 11px; }
+.result-row.major strong { font-size: 30px; color: var(--text); }
+.divider { height: 1px; background: var(--border); margin: 1px 0 5px; }
+.cyan-text { color: var(--cyan) !important; }
+.green-text { color: var(--green) !important; }
+.danger-text { color: var(--red) !important; }
+.amber-text { color: var(--amber) !important; }
+
+.primary-btn, .secondary-btn, .small-btn, .icon-btn {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-weight: 800;
+}
+.primary-btn { width: 100%; min-height: 54px; margin-top: 14px; color: var(--cyan); border-color: var(--cyan); background: var(--cyan-soft); font-size: 16px; }
+.secondary-btn { width: 100%; min-height: 50px; margin-top: 12px; color: var(--muted); background: transparent; }
+.small-btn { min-height: 38px; padding: 0 12px; color: var(--cyan); border-color: rgba(43,213,196,.55); background: var(--cyan-soft); }
+.icon-btn { width: 34px; height: 34px; color: var(--muted); background: transparent; font-size: 22px; }
+
+.entries { display: grid; gap: 10px; }
+.entry-row {
+  display: grid;
+  grid-template-columns: 1fr .72fr .82fr auto;
+  align-items: end;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(8, 12, 17, .22);
+}
+.entry-field { display: grid; gap: 5px; }
+.entry-field span { color: var(--muted); font-size: 12px; }
+.entry-field input {
+  width: 100%; min-width: 0; height: 47px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--panel-2); color: var(--text); padding: 0 10px; outline: none; font-size: 17px;
+}
+.entry-field input:focus { border-color: var(--cyan); }
+.entry-remove { width: 42px; height: 47px; border: 1px solid var(--border); border-radius: 12px; color: var(--muted); background: transparent; font-size: 18px; }
+.entry-remove:disabled { opacity: .3; }
+
+.summary-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border-radius: 16px; overflow: hidden; margin-top: 13px; border: 1px solid var(--border); }
+.summary-strip > div { background: var(--panel); padding: 12px 9px; text-align: center; }
+.summary-strip span { display: block; color: var(--muted); font-size: 11px; margin-bottom: 6px; }
+.summary-strip strong { font-size: 16px; }
+.summary-note { margin: 8px 4px 0; color: var(--muted-2); font-size: 11px; line-height: 1.4; }
+.stop-grid { margin-top: 15px; align-items: stretch; }
+.risk-box { border: 1px solid rgba(255,107,115,.34); background: var(--red-soft); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+.risk-box span, .risk-box small { color: var(--muted); }
+.risk-box strong { font-size: 27px; }
+
+.status-card { margin-top: 14px; border: 1px solid var(--border); background: rgba(8,12,17,.26); border-radius: 16px; padding: 14px; color: var(--muted); line-height: 1.45; font-size: 14px; }
+.status-card.ok { border-color: var(--cyan); background: var(--cyan-soft); }
+.status-card.warn { border-color: var(--amber); background: var(--amber-soft); }
+.status-card.danger { border-color: var(--red); background: var(--red-soft); }
+.status-card strong { color: var(--text); }
+
+.sim-chips { justify-content: space-between; }
+.sim-hero { margin-top: 16px; border-radius: 18px; padding: 18px; border: 1px solid var(--border); background: rgba(8,12,17,.28); text-align: center; }
+.sim-hero span { display: block; color: var(--muted); font-size: 13px; }
+.sim-hero strong { display: block; font-size: 39px; margin: 8px 0 3px; }
+.sim-hero small { color: var(--muted); }
+
+.result-label-stack { display: grid; gap: 3px; min-width: 0; }
+.result-label-stack > span { color: var(--muted); font-size: 14px; }
+.result-label-stack small { color: var(--muted-2); font-size: 10px; line-height: 1.35; }
+.current-pnl-row strong { flex: 0 0 auto; }
+
+.settings-card { padding: 0; overflow: hidden; }
+.settings-card summary { list-style: none; display: flex; justify-content: space-between; align-items: center; padding: 18px; cursor: pointer; }
+.settings-card summary::-webkit-details-marker { display: none; }
+.settings-card .chev { color: var(--muted); font-size: 24px; transition: transform .2s ease; }
+.settings-card[open] .chev { transform: rotate(180deg); }
+.settings-body { padding: 0 18px 18px; }
+.fees-box { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 9px; }
+.fineprint { color: var(--muted); line-height: 1.5; font-size: 13px; margin: 12px 0 0; }
+
+.note-card { border: 1px solid rgba(43,213,196,.35); border-radius: var(--radius); padding: 16px 17px; background: var(--cyan-soft); }
+.note-card strong { color: var(--cyan); }
+.note-card p { color: var(--muted); line-height: 1.5; margin: 7px 0 0; font-size: 14px; }
+
+.install-hint { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid rgba(91,164,255,.45); background: var(--blue-soft); color: var(--muted); border-radius: 16px; padding: 12px 12px 12px 14px; margin-bottom: 18px; font-size: 13px; line-height: 1.4; }
+.install-hint strong { color: var(--blue); }
+.hidden { display: none !important; }
+
+footer { color: var(--muted-2); text-align: center; font-size: 12px; line-height: 1.45; padding: 24px 12px 0; }
+
+@media (max-width: 560px) {
+  .app-shell { padding-left: 14px; padding-right: 14px; }
+  .topbar { display: block; position: relative; }
+  .version { position: absolute; right: 0; top: 1px; }
+  .topbar h1 { padding-right: 92px; font-size: 34px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .big-input { font-size: 25px; min-height: 68px; }
+  .converter-grid .big-input { font-size: 24px; }
+  .entry-row { grid-template-columns: 1fr .72fr; }
+  .entry-row .entry-field:nth-child(3) { grid-column: 1 / span 1; }
+  .entry-remove { grid-column: 2; grid-row: 2; width: 100%; }
+  .summary-strip { grid-template-columns: repeat(2, 1fr); }
+  .summary-strip strong { font-size: 15px; }
+  .stop-grid { grid-template-columns: 1fr; }
+  .sim-chips { justify-content: flex-start; }
+}
+
+@media (max-width: 390px) {
+  .card { padding: 15px; }
+  .grid-2 { gap: 9px; }
+  .big-input { padding-left: 13px; padding-right: 13px; font-size: 22px; }
+  .result-row strong { font-size: 16px; }
+  .result-row.major strong { font-size: 27px; }
+  .summary-strip span { font-size: 10px; }
+}
+
+
+/* v1.2 · SL/TP individuel par entrée */
+.reward-input { border-color: rgba(43, 213, 196, .35); }
+.exit-result-grid { margin-top: 10px; }
+.reward-box {
+  border: 1px solid rgba(43,213,196,.34);
+  background: var(--cyan-soft);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+.reward-box span, .reward-box small { color: var(--muted); }
+.reward-box strong { font-size: 27px; }
+.rr-strip {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  background: rgba(8,12,17,.22);
+  border-radius: 14px;
+  padding: 10px 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.rr-strip span { color: var(--muted); font-size: 13px; }
+.rr-strip strong { font-size: 17px; }
+
+.entry-exits {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  margin-top: 3px;
+  padding-top: 3px;
+}
+.entry-exits summary {
+  list-style: none;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+.entry-exits summary::-webkit-details-marker { display: none; }
+.entry-exits summary::after {
+  content: '⌄';
+  color: var(--muted-2);
+  font-size: 18px;
+  transition: transform .18s ease;
+}
+.entry-exits[open] summary::after { transform: rotate(180deg); }
+.entry-exit-summary-label { display: inline-flex; align-items: center; gap: 7px; }
+.entry-exit-mode {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 10px;
+  letter-spacing: .02em;
+  color: var(--muted);
+  background: rgba(255,255,255,.02);
+}
+.entry-exit-mode.custom {
+  color: var(--amber);
+  border-color: rgba(255,177,31,.45);
+  background: var(--amber-soft);
+}
+.entry-exit-body { padding: 8px 0 4px; }
+.entry-exit-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.entry-exit-inputs .entry-field input { height: 44px; }
+.entry-exit-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 9px;
+}
+.exit-mini {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: rgba(8,12,17,.24);
+  padding: 10px;
+  min-width: 0;
+}
+.exit-mini > span { display: block; color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+.exit-mini > strong { display: block; font-size: 15px; margin-bottom: 3px; }
+.exit-mini > small { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
+.exit-mini.stop { border-color: rgba(255,107,115,.25); }
+.exit-mini.target { border-color: rgba(43,213,196,.25); }
+.entry-rr {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.entry-rr strong { color: var(--text); }
+.entry-exit-help { margin: 8px 1px 0; color: var(--muted-2); font-size: 10px; line-height: 1.35; }
+
+@media (max-width: 560px) {
+  .global-exit-inputs, .exit-result-grid { grid-template-columns: 1fr 1fr; }
+  .entry-exit-results { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 360px) {
+  .global-exit-inputs, .exit-result-grid { grid-template-columns: 1fr; }
+  .entry-exit-inputs, .entry-exit-results { grid-template-columns: 1fr; }
+}
+
+  
+
+/* v1.3 · simulateur d'entrée unifié */
+.builder-grid { margin-top: 2px; }
+.builder-subtitle { color: var(--muted); font-size: 13px; line-height: 1.45; margin: -5px 0 14px; }
+.builder-results { margin-top: 14px; }
+.builder-exits { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.builder-exits h3, .builder-sim h3 { margin: 0 0 12px; font-size: 16px; letter-spacing: -.15px; }
+.builder-sim { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.builder-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.builder-stat {
+  border: 1px solid var(--border); border-radius: 16px; padding: 12px 13px; background: rgba(8,12,17,.24);
+}
+.builder-stat span { display: block; color: var(--muted); font-size: 11px; margin-bottom: 5px; }
+.builder-stat strong { display: block; font-size: 22px; }
+.builder-stat small { display: block; color: var(--muted); margin-top: 4px; font-size: 11px; line-height: 1.35; }
+.builder-stat.stop { border-color: rgba(255,107,115,.30); background: var(--red-soft); }
+.builder-stat.tp { border-color: rgba(43,213,196,.30); background: var(--cyan-soft); }
+.builder-rr { margin-top: 10px; }
+.builder-action-note { color: var(--muted-2); font-size: 11px; text-align: center; margin: 9px 0 0; }
+.builder-secondary { display: flex; justify-content: flex-end; margin-top: 8px; }
+.builder-link { border: 0; background: transparent; color: var(--muted); font-weight: 750; padding: 6px 2px; }
+
+.plan-empty { border: 1px dashed var(--border); border-radius: 16px; padding: 18px; color: var(--muted); text-align: center; line-height: 1.5; }
+.plan-entry-card { border: 1px solid var(--border); border-radius: 17px; background: rgba(8,12,17,.23); padding: 13px; }
+.plan-entry-card + .plan-entry-card { margin-top: 10px; }
+.plan-entry-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+.plan-entry-title { font-weight: 850; font-size: 15px; }
+.plan-entry-title small { display: block; color: var(--muted); font-weight: 650; font-size: 11px; margin-top: 3px; }
+.plan-entry-remove { width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 20px; }
+.plan-entry-fields { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; }
+.plan-entry-fields .entry-field input { height: 45px; }
+.plan-entry-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.plan-mini { border: 1px solid var(--border); border-radius: 13px; padding: 9px 10px; background: rgba(255,255,255,.015); min-width: 0; }
+.plan-mini span { display: block; color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+.plan-mini strong { display: block; font-size: 14px; overflow-wrap: anywhere; }
+.plan-mini small { display: block; color: var(--muted-2); font-size: 10px; margin-top: 3px; }
+.plan-mini.stop { border-color: rgba(255,107,115,.23); }
+.plan-mini.tp { border-color: rgba(43,213,196,.23); }
+.plan-total-boxes { margin-top: 13px; }
+.plan-section-sep { height: 1px; background: var(--border); margin: 15px 0; }
+.no-entries-note { color: var(--muted); font-size: 13px; }
+
+.scenario-panel { margin-top: 13px; }
+.scenario-result { text-align: center; border: 1px solid var(--border); border-radius: 17px; padding: 15px; background: rgba(8,12,17,.27); }
+.scenario-result span { display:block; color: var(--muted); font-size: 12px; }
+.scenario-result strong { display:block; font-size: 33px; margin: 6px 0 3px; }
+.scenario-result small { color: var(--muted); }
+
+@media (max-width: 620px) {
+  .plan-entry-fields { grid-template-columns: 1fr 1fr; }
+  .plan-entry-fields .entry-field:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 390px) {
+  .builder-stat-grid { grid-template-columns: 1fr; }
+  .plan-entry-metrics { grid-template-columns: 1fr; }
+}
+
+
+/* v1.5 · risque compte pilotable */
+/* v1.8 · couleurs SL/TP */
+
+/* v1.10 · statut entrée ouverte / prévue */
+/* v1.13 · P&L ouvert fiabilisé + repère explicite */
+.plan-entry-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+.entry-status-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(8,12,17,.28);
+}
+.entry-status-btn {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+.entry-status-btn.active[data-status="open"] { color: var(--cyan); background: var(--cyan-soft); }
+.entry-status-btn.active[data-status="planned"] { color: var(--amber); background: var(--amber-soft); }
+.projection-note { margin-top: 9px; }
+@media (max-width: 430px) {
+  .plan-entry-head { flex-wrap: wrap; }
+  .plan-entry-actions { width: 100%; justify-content: space-between; }
+}
+
+/* v1.9 · equity discrète + structure du plan */
+.risk-input {
+  font-weight: 700;
+}
+
+.account-equity-strip {
+  margin-top: 10px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(8,12,17,.20);
+}
+.account-equity-main {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.account-equity-main span { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.account-equity-input {
+  width: 118px;
+  min-width: 92px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--text);
+  outline: none;
+  font-size: 15px;
+}
+.account-equity-input:focus { border-color: var(--cyan); }
+.equity-reset {
+  flex: 0 0 auto;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+.account-floating {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.account-floating strong { color: var(--text); font-size: 12px; margin-left: 4px; }
+@media (max-width: 430px) {
+  .account-equity-strip { gap: 7px; padding-left: 10px; }
+  .account-equity-main { gap: 6px; }
+  .account-equity-main span { font-size: 11px; }
+  .account-equity-input { width: 103px; }
+  .equity-reset { padding: 0 8px; }
+  .account-floating { display: none; }
+}
+
+
+/* v1.15 · sizing risque optionnel + journal réalisé */
+.hidden-v115 { display: none !important; }
+.pnl-counter {
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px 16px;
+  border-color: rgba(43,213,196,.28);
+}
+.pnl-counter-main { min-width: 0; }
+.pnl-counter-label { color: var(--muted); font-size: 11px; font-weight: 850; letter-spacing: .09em; }
+.pnl-counter-value { display: block; font-size: 34px; line-height: 1.05; margin-top: 5px; }
+.pnl-counter-meta { color: var(--muted); font-size: 11px; margin-top: 5px; }
+.pnl-periods {
+  grid-column: 1 / -1;
+  display: flex; gap: 5px; flex-wrap: nowrap; justify-content: flex-start;
+  overflow-x: auto; padding: 1px 0 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.pnl-periods::-webkit-scrollbar { display: none; }
+.pnl-period-btn, .tiny-tab {
+  min-height: 34px; padding: 0 9px; border-radius: 10px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); font-size: 11px; font-weight: 800;
+}
+.pnl-period-btn.active, .tiny-tab.active { color: var(--cyan); border-color: rgba(43,213,196,.55); background: var(--cyan-soft); }
+.pnl-period-btn { flex: 0 0 auto; white-space: nowrap; }
+.recap-level { color: var(--muted); font-size: 11px; font-weight: 750; margin-left: 6px; }
+.pnl-counter-open { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--border); padding-top: 9px; }
+.pnl-counter-open button { border: 0; background: transparent; color: var(--cyan); font-weight: 800; padding: 4px 0; font-size: 12px; }
+.pnl-counter-open span { color: var(--muted-2); font-size: 10px; text-align: right; }
+
+.history-card.hidden-v115 { display:none; }
+.history-toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:end; margin-bottom:12px; }
+.history-toolbar .field { min-width: 140px; flex:1 1 160px; }
+.select-input {
+  width: 100%; min-height: 44px; padding: 0 11px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--panel-2); color: var(--text); outline: none; font-size: 14px;
+}
+.history-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:15px; overflow:hidden; margin:12px 0; }
+.history-stats > div { background:var(--panel); padding:11px 8px; text-align:center; }
+.history-stats span { display:block; color:var(--muted); font-size:10px; margin-bottom:5px; }
+.history-stats strong { font-size:15px; }
+.history-actions { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+.history-actions button, .file-button {
+  min-height: 40px; padding:0 12px; border:1px solid var(--border); border-radius:12px; background:transparent; color:var(--muted); font-weight:800; font-size:12px;
+}
+.file-button { display:inline-flex; align-items:center; cursor:pointer; }
+.history-list { display:grid; gap:8px; }
+.history-row { border:1px solid var(--border); border-radius:14px; padding:11px 12px; background:rgba(8,12,17,.22); display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 12px; }
+.history-row-main { min-width:0; }
+.history-row-title { display:flex; align-items:center; gap:7px; flex-wrap:wrap; font-weight:850; font-size:14px; }
+.history-row-title small { color:var(--muted); font-weight:650; }
+.history-row-meta { color:var(--muted); font-size:10px; margin-top:5px; line-height:1.4; }
+.history-row-pnl { font-size:17px; font-weight:850; text-align:right; }
+.history-row-actions { grid-column:1/-1; display:flex; justify-content:flex-end; gap:7px; }
+.history-row-actions button { border:0; background:transparent; color:var(--muted); font-size:11px; font-weight:800; padding:3px 0 3px 8px; }
+.empty-history { color:var(--muted); text-align:center; border:1px dashed var(--border); border-radius:14px; padding:16px; font-size:12px; line-height:1.5; }
+
+.builder-converter-label { color:var(--muted); font-size:11px; font-weight:850; letter-spacing:.09em; margin:14px 0 9px; }
+.risk-helper { margin: 12px 0 2px; border:1px solid var(--border); border-radius:15px; background:rgba(8,12,17,.20); overflow:hidden; }
+.risk-helper summary { list-style:none; min-height:48px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 13px; color:var(--muted); cursor:pointer; font-size:13px; font-weight:800; }
+.risk-helper summary::-webkit-details-marker { display:none; }
+.risk-helper summary::after { content:'⌄'; color:var(--muted-2); font-size:18px; transition:transform .18s ease; }
+.risk-helper[open] summary::after { transform:rotate(180deg); }
+.risk-helper-body { border-top:1px solid var(--border); padding:13px; }
+.risk-helper-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.risk-preset-row, .r-preset-row { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:8px 0 0; }
+.risk-preset-row::-webkit-scrollbar, .r-preset-row::-webkit-scrollbar { display:none; }
+.mini-chip { flex:0 0 auto; min-height:34px; padding:0 10px; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--muted); font-size:11px; font-weight:800; }
+.mini-chip.active { color:var(--amber); border-color:var(--amber); background:var(--amber-soft); }
+.risk-helper-sl { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; padding:9px 10px; border:1px solid var(--border); border-radius:12px; }
+.risk-helper-sl span { color:var(--muted); font-size:11px; }
+.risk-helper-sl strong { font-size:13px; }
+.auto-sl-btn { min-height:34px; padding:0 10px; border:1px solid rgba(43,213,196,.5); border-radius:10px; background:transparent; color:var(--cyan); font-size:11px; font-weight:850; }
+.auto-sl-btn.active { background:var(--cyan-soft); }
+.risk-proposal { margin-top:10px; padding:12px; border:1px solid rgba(43,213,196,.28); border-radius:14px; background:rgba(43,213,196,.035); }
+.risk-proposal-head { color:var(--muted); font-size:10px; font-weight:850; letter-spacing:.08em; }
+.risk-proposal-main { font-size:25px; margin-top:5px; line-height:1.15; }
+.risk-proposal-sub { color:var(--muted); font-size:11px; line-height:1.5; margin-top:7px; }
+.risk-proposal-alert { margin-top:8px; font-size:11px; line-height:1.45; color:var(--muted); }
+.risk-proposal-alert.warn { color:var(--amber); }
+.risk-proposal-alert.danger { color:var(--red); }
+.risk-helper-actions { display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:10px; }
+.apply-risk-btn { min-height:44px; border:1px solid var(--cyan); border-radius:12px; background:var(--cyan-soft); color:var(--cyan); font-weight:850; }
+.close-risk-btn { min-height:44px; border:1px solid var(--border); border-radius:12px; background:transparent; color:var(--muted); font-weight:800; padding:0 12px; }
+
+.entry-status-btn.active[data-status="closed"] { color:var(--muted); background:rgba(143,153,170,.12); }
+.be-warning.hidden-v115 { display:none; }
+
+.modal-backdrop { position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.72); display:flex; align-items:flex-end; justify-content:center; padding:18px; }
+.modal-backdrop.hidden-v115 { display:none; }
+.modal-sheet { width:min(100%,620px); max-height:88vh; overflow:auto; background:var(--panel); border:1px solid var(--border); border-radius:22px; padding:17px; box-shadow:0 20px 60px rgba(0,0,0,.45); }
+.modal-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px; }
+.modal-head h3 { margin:2px 0 0; font-size:20px; }
+.modal-close-x { width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:20px; }
+.modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.modal-calc { margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; display:flex; justify-content:space-between; gap:10px; align-items:center; }
+.modal-calc span { color:var(--muted); font-size:11px; }
+.modal-calc strong { font-size:17px; }
+.modal-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:13px; }
+
+.csv-map { margin-top:12px; border:1px solid rgba(91,164,255,.35); border-radius:15px; padding:12px; background:var(--blue-soft); }
+.csv-map.hidden-v115 { display:none; }
+.csv-map-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+.csv-map-head strong { font-size:13px; }
+.csv-map-head small { display:block; color:var(--muted); margin-top:3px; }
+.csv-map-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+.csv-map .field span { font-size:11px; }
+.csv-status { color:var(--muted); font-size:11px; margin-top:8px; line-height:1.45; }
+
+.local-data-box {
+  margin-top: 15px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.local-data-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.local-data-head strong { font-size:13px; }
+.local-data-head small { display:block; color:var(--muted); margin-top:4px; line-height:1.45; max-width:440px; }
+.local-data-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.local-data-actions button, .backup-file-button {
+  min-height:40px; padding:0 12px; border:1px solid var(--border); border-radius:12px; background:transparent; color:var(--muted); font-weight:800; font-size:12px;
+}
+.backup-file-button { display:inline-flex; align-items:center; cursor:pointer; }
+.local-data-status { color:var(--muted-2); font-size:10px; line-height:1.45; margin-top:8px; }
+.local-data-status.ok { color:var(--cyan); }
+.local-data-status.warn { color:var(--amber); }
+
+@media (max-width:560px) {
+  .pnl-counter { grid-template-columns:1fr; }
+  .pnl-periods { justify-content:flex-start; }
+  .pnl-counter-open { grid-column:auto; }
+  .history-stats { grid-template-columns:repeat(2,1fr); }
+  .risk-helper-grid, .modal-grid, .csv-map-grid { grid-template-columns:1fr; }
+}
+
+/* v1.19 · confidentialité ciblée : solde + P&L réalisé */
+/* v1.20 · identité visuelle verrouillée + nouvelle icône */
+.privacy-toggle {
+  width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid var(--border); border-radius:11px; background:transparent; color:var(--muted); padding:0; flex:0 0 auto;
+}
+.privacy-toggle:hover { border-color:rgba(43,213,196,.45); color:var(--text); }
+.privacy-toggle.active { color:var(--text); border-color:rgba(143,153,170,.55); background:rgba(255,255,255,.035); }
+.privacy-toggle svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.privacy-toggle .eye-off { display:none; }
+.privacy-toggle.active .eye-on { display:none; }
+.privacy-toggle.active .eye-off { display:block; }
+.pnl-counter-title-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+
+/* Toujours le même masque, quelle que soit la vraie valeur : aucun chiffre ni couleur ne transparaît. */
+body.privacy-mode .privacy-realized {
+  position:relative;
+  color:transparent !important;
+  text-shadow:none !important;
+  filter:none !important;
+  user-select:none;
+}
+body.privacy-mode .privacy-realized::after {
+  content:'••••••';
+  position:absolute;
+  left:0;
+  top:0;
+  color:var(--text) !important;
+  font:inherit;
+  letter-spacing:.12em;
+  white-space:nowrap;
+}
+body.privacy-mode .history-row-pnl.privacy-realized::after { left:auto; right:0; }
+
+.privacy-balance-wrap { position:relative; }
+.privacy-balance-cover {
+  display:none;
+  position:absolute;
+  inset:0;
+  z-index:2;
+  align-items:center;
+  padding:14px 16px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--panel-2);
+  color:var(--text);
+  font-size:29px;
+  font-family:ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.12em;
+  pointer-events:none;
+  user-select:none;
+}
+body.privacy-mode .privacy-balance-cover { display:flex; }
+body.privacy-mode .privacy-balance-wrap input { caret-color:transparent; pointer-events:none; }
+@media (max-width:560px) { .privacy-balance-cover { font-size:25px; min-height:68px; } }
+@media (max-width:390px) { .privacy-balance-cover { font-size:22px; padding-left:13px; padding-right:13px; } }
+
+</style>
+  <title>Dashboard · v1.20</title>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <div>
-        <h1>Cadre FTMO · JP225</h1>
-        <p class="subtitle">Marge ≠ risque. Prépare la taille, fractionne tes entrées et vois l'equity avant de cliquer.</p>
+        <h1>Dashboard</h1>
+        <p class="subtitle">Prépare une entrée complète, ajoute-la au plan, puis ajuste tout sans refaire les calculs.</p>
       </div>
-      <div class="version">v1 · mémoire</div>
+      <div class="version">v1.20 · local</div>
     </header>
 
     <section id="installHint" class="install-hint hidden">
@@ -30,19 +735,114 @@
     </section>
 
     <main>
+
+      <section class="card pnl-counter" id="pnlCounterCard">
+        <div class="pnl-counter-main">
+          <div class="pnl-counter-title-row">
+            <div class="pnl-counter-label">P&amp;L RÉALISÉ</div>
+            <button id="privacyToggle" class="privacy-toggle" type="button" aria-pressed="false" aria-label="Masquer le P&L réalisé et le solde" title="Masquer le P&L réalisé et le solde">
+              <svg class="eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+              <svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a15.4 15.4 0 0 1-2.1 2.8M6.2 7.2C3.8 9 2.5 12 2.5 12s3.5 6 9.5 6a9.9 9.9 0 0 0 3.2-.5M9.9 9.9A3 3 0 0 0 14.1 14.1"/></svg>
+            </button>
+          </div>
+          <strong id="realizedPnlValue" class="pnl-counter-value mono privacy-realized">0,00 $</strong>
+          <div id="realizedPnlMeta" class="pnl-counter-meta">Aujourd’hui · 0 trade · Tous actifs</div>
+        </div>
+        <div class="pnl-periods" role="group" aria-label="Période du P&L réalisé">
+          <button type="button" class="pnl-period-btn active" data-period="day">Aujourd’hui</button>
+          <button type="button" class="pnl-period-btn" data-period="week">Cette semaine</button>
+          <button type="button" class="pnl-period-btn" data-period="30d">30 jours</button>
+          <button type="button" class="pnl-period-btn" data-period="1m">1 mois</button>
+          <button type="button" class="pnl-period-btn" data-period="3m">3 mois</button>
+          <button type="button" class="pnl-period-btn" data-period="6m">6 mois</button>
+          <button type="button" class="pnl-period-btn" data-period="12m">12 mois</button>
+          <button type="button" class="pnl-period-btn" data-period="18m">18 mois</button>
+          <button type="button" class="pnl-period-btn" data-period="24m">24 mois</button>
+        </div>
+        <div class="pnl-counter-open">
+          <button id="toggleHistory" type="button">Voir l’historique &amp; importer</button>
+          <span id="pnlCounterAsset">Tous actifs</span>
+        </div>
+      </section>
+
+      <section id="historyCard" class="card history-card hidden-v115">
+        <div class="card-head">
+          <div>
+            <div class="section-kicker">RÉSULTATS RÉALISÉS</div>
+            <h2>Historique</h2>
+          </div>
+          <button id="closeHistory" type="button" class="small-btn">Fermer</button>
+        </div>
+        <div class="history-toolbar">
+          <label class="field">
+            <span>Actif</span>
+            <select id="historyAssetFilter" class="select-input"><option value="all">Tous actifs</option></select>
+          </label>
+          <label class="field">
+            <span>Période</span>
+            <select id="historyPeriodFilter" class="select-input">
+              <option value="day">Aujourd’hui</option>
+              <option value="week">Cette semaine</option>
+              <option value="30d">30 jours</option>
+              <option value="1m">1 mois</option>
+              <option value="3m">3 mois</option>
+              <option value="6m">6 mois</option>
+              <option value="12m">12 mois</option>
+              <option value="18m">18 mois</option>
+              <option value="24m">24 mois</option>
+            </select>
+          </label>
+        </div>
+        <div class="history-stats">
+          <div><span>P&amp;L</span><strong id="historyStatPnl" class="mono privacy-realized">0 $</strong></div>
+          <div><span>Trades</span><strong id="historyStatTrades" class="mono">0</strong></div>
+          <div><span>Win rate</span><strong id="historyStatWin" class="mono">—</strong></div>
+          <div><span>Moy. G / P</span><strong id="historyStatAvg" class="mono privacy-realized">—</strong></div>
+        </div>
+        <div class="history-actions">
+          <label class="file-button">Importer CSV<input id="csvFileInput" type="file" accept=".csv,.txt,text/csv" hidden></label>
+          <button id="exportHistoryCsv" type="button">Exporter l’historique CSV</button>
+        </div>
+        <div id="csvMapPanel" class="csv-map hidden-v115">
+          <div class="csv-map-head"><div><strong>Associer les colonnes</strong><small id="csvMapMeta">—</small></div><button id="cancelCsvImport" class="icon-btn" type="button">×</button></div>
+          <div class="csv-map-grid">
+            <label class="field"><span>Date clôture *</span><select id="mapCloseDate" class="select-input"></select></label>
+            <label class="field"><span>P&amp;L réalisé ($) *</span><select id="mapPnl" class="select-input"></select></label>
+            <label class="field"><span>Actif</span><select id="mapAsset" class="select-input"></select></label>
+            <label class="field"><span>ID broker</span><select id="mapBrokerId" class="select-input"></select></label>
+            <label class="field"><span>Prix entrée</span><select id="mapEntryPrice" class="select-input"></select></label>
+            <label class="field"><span>Prix sortie</span><select id="mapExitPrice" class="select-input"></select></label>
+            <label class="field"><span>Lots / unités</span><select id="mapLots" class="select-input"></select></label>
+            <label class="field"><span>Sens</span><select id="mapDirection" class="select-input"></select></label>
+          </div>
+          <div id="csvImportStatus" class="csv-status">Vérifie les deux champs obligatoires puis importe.</div>
+          <button id="confirmCsvImport" type="button" class="primary-btn">Importer les lignes</button>
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </section>
       <section class="card hero-card">
         <div class="section-kicker">COMPTE</div>
         <div class="grid-2">
           <label class="field">
             <span>Solde / balance ($)</span>
-            <input id="balance" class="big-input mono" inputmode="decimal" value="100000" />
+            <div class="privacy-balance-wrap">
+              <input id="balance" class="big-input mono" inputmode="decimal" value="100000" />
+              <span class="privacy-balance-cover" aria-hidden="true">••••••</span>
+            </div>
           </label>
           <label class="field">
             <span>Niveau Nikkei actuel</span>
             <input id="currentLevel" class="big-input mono" inputmode="decimal" value="65000" />
           </label>
         </div>
-
+        <div class="account-equity-strip" aria-label="Equity actuelle">
+          <div class="account-equity-main">
+            <span>Equity actuelle ($)</span>
+            <input id="accountEquity" class="account-equity-input mono" inputmode="decimal" value="100000" aria-label="Equity actuelle en dollars" />
+          </div>
+          <button id="equityToBalance" class="equity-reset" type="button">= Solde</button>
+          <div class="account-floating">P&amp;L latent <strong id="floatingPnl" class="mono">0 $</strong></div>
+        </div>
         <div class="segmented" role="group" aria-label="Sens du trade">
           <button id="buyBtn" class="seg active" data-dir="1">Achat ↑</button>
           <button id="sellBtn" class="seg" data-dir="-1">Vente ↓</button>
@@ -52,23 +852,29 @@
       <section class="card">
         <div class="card-head">
           <div>
-            <div class="section-kicker">CONVERTISSEUR</div>
-            <h2>$ de marge ↔ lots</h2>
+            <div class="section-kicker">SIMULATEUR D’ENTRÉE</div>
+            <h2>Préparer une entrée complète</h2>
           </div>
           <span class="pill cyan">FTMO Swing</span>
         </div>
+        <p class="builder-subtitle">Tu règles ici la taille, le SL et le TP. Ensuite seulement tu ajoutes l’entrée au plan.</p>
 
-        <div class="grid-2 converter-grid">
+        <label class="field">
+          <span>Prix d’entrée</span>
+          <input id="builderPrice" class="big-input mono" inputmode="decimal" value="65000" />
+        </label>
+
+        <div class="builder-converter-label">CONVERTISSEUR · $ DE MARGE ↔ LOTS</div>
+        <div class="grid-2 builder-grid">
           <label class="field">
             <span>$ à immobiliser</span>
-            <input id="marginWanted" class="big-input mono accent-input" inputmode="decimal" value="1000" />
+            <input id="builderMargin" class="big-input mono accent-input" inputmode="decimal" value="1000" />
           </label>
           <label class="field">
             <span>Lots</span>
-            <input id="lotsWanted" class="big-input mono" inputmode="decimal" value="0" />
+            <input id="builderLots" class="big-input mono" inputmode="decimal" value="0" />
           </label>
         </div>
-
         <div class="quick-row" aria-label="Montants rapides">
           <button class="chip margin-chip" data-margin="150">150 $</button>
           <button class="chip margin-chip" data-margin="300">300 $</button>
@@ -77,151 +883,787 @@
           <button class="chip margin-chip" data-margin="2000">2 000 $</button>
         </div>
 
-        <div class="result-panel compact">
-          <div class="result-row major">
-            <span>À saisir sur MT5</span>
-            <strong id="converterLotsOut" class="mono">— lots</strong>
+        <details id="riskHelper" class="risk-helper">
+          <summary>Calculer la taille selon mon risque</summary>
+          <div class="risk-helper-body">
+            <div class="risk-helper-grid">
+              <label class="field"><span>Risque cible (%)</span><input id="riskToolPct" class="input mono" inputmode="decimal" value="0.5"></label>
+              <label class="field"><span>Objectif (R)</span><input id="riskToolR" class="input mono" inputmode="decimal" value="4"></label>
+            </div>
+            <div id="riskPresetRow" class="risk-preset-row" aria-label="Raccourcis risque"></div>
+            <div class="r-preset-row" aria-label="Raccourcis R">
+              <button type="button" class="mini-chip r-tool-chip" data-r="1">1R</button>
+              <button type="button" class="mini-chip r-tool-chip" data-r="2">2R</button>
+              <button type="button" class="mini-chip r-tool-chip" data-r="3">3R</button>
+              <button type="button" class="mini-chip r-tool-chip" data-r="4">4R</button>
+              <button type="button" class="mini-chip r-tool-chip" data-r="5">5R</button>
+            </div>
+            <div class="risk-helper-sl">
+              <div><span>SL utilisé</span><strong id="riskToolSlUsed" class="mono">—</strong></div>
+              <button id="riskToolAutoSl" class="auto-sl-btn" type="button">↻ auto</button>
+            </div>
+            <div class="risk-proposal">
+              <div class="risk-proposal-head">PROPOSITION · RIEN N’EST APPLIQUÉ</div>
+              <div id="riskProposalMain" class="risk-proposal-main mono">—</div>
+              <div id="riskProposalSub" class="risk-proposal-sub">Renseigne un SL valide ou utilise Auto.</div>
+              <div id="riskProposalAlert" class="risk-proposal-alert"></div>
+            </div>
+            <div class="risk-helper-actions">
+              <button id="applyRiskProposal" type="button" class="apply-risk-btn">Appliquer à cette entrée</button>
+              <button id="closeRiskHelper" type="button" class="close-risk-btn">Fermer</button>
+            </div>
           </div>
-          <div class="divider"></div>
-          <div class="result-row"><span>Marge par lot</span><strong id="marginPerLotOut" class="mono">—</strong></div>
-          <div class="result-row"><span>Valeur de 1 point / lot</span><strong id="pointPerLotOut" class="mono cyan-text">—</strong></div>
-          <div class="result-row"><span>Exposition notionnelle</span><strong id="converterExposureOut" class="mono">—</strong></div>
+        </details>
+
+        <div class="builder-exits">
+          <h3>Stop Loss &amp; Take Profit de cette entrée</h3>
+          <div class="grid-2">
+            <label class="field">
+              <span>Stop Loss (prix)</span>
+              <input id="builderStop" class="big-input mono danger-input" inputmode="decimal" value="64500" />
+            </label>
+            <label class="field">
+              <span>Take Profit (prix)</span>
+              <input id="builderTp" class="big-input mono reward-input" inputmode="decimal" value="65500" />
+            </label>
+          </div>
+          <div class="builder-stat-grid">
+            <div class="builder-stat stop">
+              <span>RISQUE AU SL</span>
+              <strong id="builderRiskDollar" class="mono danger-text">—</strong>
+              <small id="builderRiskDetail">—</small>
+            </div>
+            <div class="builder-stat tp">
+              <span>GAIN AU TP</span>
+              <strong id="builderRewardDollar" class="mono cyan-text">—</strong>
+              <small id="builderRewardDetail">—</small>
+            </div>
+          </div>
+          <div class="rr-strip builder-rr">
+            <span>Ratio gain / risque</span>
+            <strong id="builderRR" class="mono">—</strong>
+          </div>
+          <div id="builderExitMessage" class="status-card"></div>
         </div>
 
-        <button id="addConverterPosition" class="primary-btn">+ Ajouter ce lot au plan</button>
+        <div class="result-panel compact builder-results">
+          <div class="result-row major">
+            <span>À saisir sur MT5</span>
+            <strong id="builderLotsOut" class="mono">— lots</strong>
+          </div>
+          <div class="divider"></div>
+          <div class="result-row"><span>Marge réellement mobilisée</span><strong id="builderActualMarginOut" class="mono amber-text">—</strong></div>
+          <div class="result-row"><span>Montant au Stop Loss</span><strong id="builderStopRecapOut" class="mono danger-text">—</strong></div>
+          <div class="result-row"><span>Montant au Take Profit</span><strong id="builderTpRecapOut" class="mono green-text">—</strong></div>
+          <div class="result-row"><span>Cette entrée vaut</span><strong id="builderPointTotalOut" class="mono cyan-text">— $ / point</strong></div>
+          <span id="builderPointPerLotOut" hidden></span>
+        </div>
+
+
+        <button id="addBuilderToPlan" class="primary-btn">+ Ajouter cette entrée au plan</button>
+        <p class="builder-action-note">Le plan reste séparé : tu peux ensuite modifier prix, lots, marge, SL ou TP directement dedans.</p>
       </section>
 
       <section class="card">
         <div class="card-head">
           <div>
             <div class="section-kicker">PLAN DE POSITION</div>
-            <h2>Entrées fractionnées & renforcements</h2>
+            <h2>Structure du plan</h2>
           </div>
-          <button id="addEntry" class="small-btn">+ Entrée</button>
+          <span id="planCount" class="pill">0 entrée</span>
         </div>
 
-        <div id="entries" class="entries"></div>
+        <div id="planEntries"></div>
 
-        <div class="summary-strip">
+        <div class="summary-strip plan-summary">
           <div><span>Lots total</span><strong id="totalLots" class="mono">—</strong></div>
+          <div><span>$ engagés (marge)</span><strong id="totalPlanMargin" class="mono amber-text">—</strong></div>
           <div><span>Prix moyen</span><strong id="avgEntry" class="mono">—</strong></div>
           <div><span>$/point total</span><strong id="pointTotal" class="mono cyan-text">—</strong></div>
         </div>
+        <p class="summary-note">$ engagés = marge estimée de toutes les entrées du plan. Les % gain/risque sont calculés sur le solde, pour rester stables même si l’equity bouge.</p>
 
-        <div class="grid-2 stop-grid">
-          <label class="field">
-            <span>Stop Loss (prix)</span>
-            <input id="stopLoss" class="big-input mono danger-input" inputmode="decimal" value="64500" />
-          </label>
+        <div class="grid-2 exit-result-grid plan-total-boxes">
           <div class="risk-box">
-            <span>Risque au SL</span>
+            <span>Risque cumulé aux SL</span>
             <strong id="riskDollar" class="mono danger-text">—</strong>
-            <small id="riskPct">— du compte</small>
+            <small id="riskPct">— du solde</small>
+          </div>
+          <div class="reward-box">
+            <span>Gain cumulé aux TP</span>
+            <strong id="rewardDollar" class="mono green-text">—</strong>
+            <small id="rewardPct">— du solde</small>
           </div>
         </div>
-
+        <div class="rr-strip">
+          <span>Ratio gain / risque du plan</span>
+          <strong id="planRR" class="mono">—</strong>
+        </div>
         <div id="riskMessage" class="status-card"></div>
       </section>
 
       <section class="card">
         <div class="card-head">
           <div>
-            <div class="section-kicker">SIMULATEUR</div>
-            <h2>P&amp;L / equity selon le Nikkei</h2>
+            <div class="section-kicker">PROJECTION DU PLAN</div>
+            <h2>P&amp;L du plan</h2>
           </div>
-          <span id="simDirectionBadge" class="pill">Achat</span>
+          <span id="planDirectionBadge" class="pill">Achat</span>
         </div>
-
         <label class="field">
-          <span>Niveau Nikkei simulé</span>
-          <input id="simLevel" class="mega-input mono" inputmode="decimal" value="65500" />
+          <span>Niveau Nikkei simulé pour tout le plan</span>
+          <input id="planSimLevel" class="mega-input mono" inputmode="decimal" value="65500" />
         </label>
-
-        <div class="quick-row sim-chips" aria-label="Variations rapides">
-          <button class="chip sim-chip" data-delta="-1000">-1000</button>
-          <button class="chip sim-chip" data-delta="-500">-500</button>
-          <button class="chip sim-chip" data-delta="-200">-200</button>
-          <button class="chip sim-chip" data-delta="200">+200</button>
-          <button class="chip sim-chip" data-delta="500">+500</button>
-          <button class="chip sim-chip" data-delta="1000">+1000</button>
+        <div class="quick-row sim-chips" aria-label="Variations rapides du plan">
+          <button class="chip plan-sim-chip" data-delta="-1000">-1000</button>
+          <button class="chip plan-sim-chip" data-delta="-500">-500</button>
+          <button class="chip plan-sim-chip" data-delta="-200">-200</button>
+          <button class="chip plan-sim-chip" data-delta="200">+200</button>
+          <button class="chip plan-sim-chip" data-delta="500">+500</button>
+          <button class="chip plan-sim-chip" data-delta="1000">+1000</button>
         </div>
-
         <div class="sim-hero">
-          <span>P&amp;L net estimé</span>
-          <strong id="simPnl" class="mono">—</strong>
-          <small id="simMove">—</small>
+          <span>P&amp;L total du plan</span>
+          <strong id="planSimPnl" class="mono">—</strong>
+          <small id="planSimMove">—</small>
         </div>
-
         <div class="result-panel">
-          <div class="result-row"><span>Equity simulée</span><strong id="simEquity" class="mono">—</strong></div>
-          <div class="result-row"><span>Marge requise</span><strong id="simMargin" class="mono">—</strong></div>
-          <div class="result-row"><span>Marge libre</span><strong id="simFreeMargin" class="mono">—</strong></div>
-          <div class="result-row"><span>Niveau de marge</span><strong id="simMarginLevel" class="mono">—</strong></div>
-          <div class="result-row"><span>Exposition</span><strong id="simExposure" class="mono">—</strong></div>
+          <div class="result-row"><span>Prix moyen du plan</span><strong id="planSimAvg" class="mono">—</strong></div>
+          <div class="result-row"><span>Lots totaux</span><strong id="planSimLots" class="mono">—</strong></div>
+          <div class="result-row"><span>Valeur totale</span><strong id="planSimPoint" class="mono cyan-text">— $ / point</strong></div>
+          <div class="result-row"><span>Marge nécessaire à ce niveau</span><strong id="planSimMargin" class="mono amber-text">—</strong></div>
+          <div class="result-row"><span>P&amp;L / solde</span><strong id="planSimPct" class="mono">—</strong></div>
         </div>
+        <p class="summary-note projection-note">Cette projection utilise toutes les entrées de la Structure du plan, ouvertes ou prévues. Elle ne dépend pas de l’equity actuelle.</p>
       </section>
 
       <section class="card">
         <div class="card-head">
           <div>
-            <div class="section-kicker">AU NIVEAU ACTUEL</div>
-            <h2>Position & marge</h2>
+            <div class="section-kicker">ENTRÉES OUVERTES · NIVEAU ACTUEL</div>
+            <h2>Position &amp; marge</h2>
           </div>
         </div>
         <div class="result-panel no-top-margin">
-          <div class="result-row"><span>P&amp;L ouvert estimé</span><strong id="currentPnl" class="mono">—</strong></div>
-          <div class="result-row"><span>Equity actuelle</span><strong id="currentEquity" class="mono">—</strong></div>
+          <div class="result-row current-pnl-row"><span class="result-label-stack"><span>P&amp;L des entrées ouvertes</span><small id="currentPnlMeta">Aucune entrée ouverte</small></span><strong id="currentPnl" class="mono">—</strong></div>
+          <div class="result-row"><span>Equity de référence</span><strong id="currentEquity" class="mono">—</strong></div>
           <div class="result-row"><span>Marge utilisée</span><strong id="currentMargin" class="mono">—</strong></div>
           <div class="result-row"><span>Marge libre</span><strong id="currentFreeMargin" class="mono">—</strong></div>
           <div class="result-row"><span>Niveau de marge</span><strong id="currentMarginLevel" class="mono">—</strong></div>
         </div>
+        <div id="beWarning" class="status-card warn be-warning hidden-v115"></div>
       </section>
 
       <details class="card settings-card">
         <summary>
           <div>
             <div class="section-kicker">RÉGLAGES</div>
-            <h2>FTMO / JP225.cash & frais</h2>
+            <h2>FTMO / JP225.cash &amp; frais</h2>
           </div>
           <span class="chev">⌄</span>
         </summary>
-
         <div class="settings-body">
           <div class="grid-2">
             <label class="field"><span>USD/JPY</span><input id="usdJpy" class="input mono" inputmode="decimal" value="156.5" /></label>
             <label class="field"><span>Levier indice</span><input id="leverage" class="input mono" inputmode="decimal" value="15" /></label>
             <label class="field"><span>Taille contrat</span><input id="contractSize" class="input mono" inputmode="decimal" value="10" /></label>
             <label class="field"><span>Pas de lot</span><input id="lotStep" class="input mono" inputmode="decimal" value="0.01" /></label>
-            <label class="field"><span>Risque perso max (%)</span><input id="riskLimitPct" class="input mono" inputmode="decimal" value="1" /></label>
+            <label class="field"><span>Risque max / trade (%)</span><input id="riskLimitPct" class="input mono" inputmode="decimal" value="1" /></label>
+            <label class="field"><span>Risque global max (%)</span><input id="globalRiskLimitPct" class="input mono" inputmode="decimal" value="2" /></label>
+            <label class="field"><span>Profil risque 1 (%)</span><input id="riskPreset1" class="input mono" inputmode="decimal" value="0.25" /></label>
+            <label class="field"><span>Profil risque 2 (%)</span><input id="riskPreset2" class="input mono" inputmode="decimal" value="0.5" /></label>
+            <label class="field"><span>Profil risque 3 (%)</span><input id="riskPreset3" class="input mono" inputmode="decimal" value="0.75" /></label>
+            <label class="field"><span>Profil risque 4 (%)</span><input id="riskPreset4" class="input mono" inputmode="decimal" value="1" /></label>
+            <label class="field"><span>Stop Auto (%)</span><input id="autoStopPct" class="input mono" inputmode="decimal" value="0.4" /></label>
+            <label class="field"><span>BE pas avant (R) · 0 = off</span><input id="beMinR" class="input mono" inputmode="decimal" value="1" /></label>
             <label class="field"><span>Spread estimé (pts)</span><input id="spreadPts" class="input mono" inputmode="decimal" value="0" /></label>
             <label class="field"><span>Commission $ / lot / côté</span><input id="commissionSide" class="input mono" inputmode="decimal" value="0" /></label>
             <label class="field"><span>Swap $ / lot / nuit</span><input id="swapPerLotNight" class="input mono" inputmode="decimal" value="0" /></label>
             <label class="field"><span>Nuits prévues</span><input id="nights" class="input mono" inputmode="numeric" value="0" /></label>
           </div>
-
           <div class="fees-box">
-            <div class="result-row"><span>Spread estimé</span><strong id="spreadCost" class="mono">—</strong></div>
-            <div class="result-row"><span>Commission aller-retour</span><strong id="commissionCost" class="mono">—</strong></div>
-            <div class="result-row"><span>Swap estimé</span><strong id="swapCost" class="mono">—</strong></div>
-            <div class="result-row"><span>Frais totaux estimés</span><strong id="totalCosts" class="mono amber-text">—</strong></div>
+            <div class="result-row"><span>Spread estimé · plan</span><strong id="spreadCost" class="mono">—</strong></div>
+            <div class="result-row"><span>Commission aller-retour · plan</span><strong id="commissionCost" class="mono">—</strong></div>
+            <div class="result-row"><span>Swap estimé · plan</span><strong id="swapCost" class="mono">—</strong></div>
+            <div class="result-row"><span>Frais totaux estimés · plan</span><strong id="totalCosts" class="mono amber-text">—</strong></div>
           </div>
-
-          <p class="fineprint">Les swaps et spreads varient : saisis les valeurs visibles dans MT5 quand tu veux une estimation au plus près. Les paramètres sont mémorisés localement sur ton iPhone.</p>
+          <p class="fineprint">Les swaps et spreads varient : saisis les valeurs visibles dans MT5 quand tu veux une estimation au plus près.</p>
+          <div class="local-data-box">
+            <div class="local-data-head">
+              <div>
+                <strong>Données locales</strong>
+                <small>Positions, réglages et historique restent sur cet appareil. Crée une sauvegarde de temps en temps pour pouvoir restaurer l’outil sur un autre navigateur ou téléphone.</small>
+              </div>
+            </div>
+            <div class="local-data-actions">
+              <button id="exportBackupJson" type="button">Sauvegarder mes données</button>
+              <label class="backup-file-button">Restaurer une sauvegarde<input id="backupFileInput" type="file" accept=".json,application/json" hidden></label>
+            </div>
+            <div id="backupStatus" class="local-data-status">Aucune donnée n’est envoyée sur un serveur par cette fonction.</div>
+          </div>
           <button id="resetApp" class="secondary-btn">Réinitialiser l’app</button>
         </div>
       </details>
 
       <section class="note-card">
-        <strong>Lecture de la calculatrice</strong>
-        <p>La marge dit combien le trade immobilise. Le risque dit combien tu perds au Stop Loss. Ce sont deux choses différentes.</p>
+        <strong>Logique de l’outil</strong>
+        <p>Le manuel reste prioritaire. Le calcul par risque ne propose rien sans ton accord. Prévue → Ouverte → Fermée alimente ensuite ton P&L réalisé et l’historique.</p>
       </section>
     </main>
 
-    <footer>
-      Outil de sizing et de gestion du risque. Vérifie toujours les spécifications de JP225.cash dans MT5 avant exécution.
-    </footer>
-  </div>
+    <div id="tradeModal" class="modal-backdrop hidden-v115" role="dialog" aria-modal="true" aria-labelledby="tradeModalTitle">
+      <div class="modal-sheet">
+        <div class="modal-head">
+          <div><div class="section-kicker">TRADE RÉALISÉ</div><h3 id="tradeModalTitle">Clôturer la position</h3></div>
+          <button id="tradeModalX" class="modal-close-x" type="button">×</button>
+        </div>
+        <div class="modal-grid">
+          <label class="field"><span>Actif</span><input id="tradeAsset" class="input mono" value="JP225"></label>
+          <label class="field"><span>Sens</span><select id="tradeDirection" class="select-input"><option value="1">Achat</option><option value="-1">Vente</option></select></label>
+          <label class="field"><span>Prix d’entrée</span><input id="tradeEntryPrice" class="input mono" inputmode="decimal"></label>
+          <label class="field"><span>Prix de clôture</span><input id="tradeExitPrice" class="input mono" inputmode="decimal"></label>
+          <label class="field"><span>Lots / unités</span><input id="tradeLots" class="input mono" inputmode="decimal"></label>
+          <label class="field"><span>Date / heure de clôture</span><input id="tradeClosedAt" class="input" type="datetime-local"></label>
+          <label class="field" style="grid-column:1/-1"><span>P&amp;L réel ($) · facultatif, remplace le calcul</span><input id="tradeActualPnl" class="input mono" inputmode="decimal" placeholder="laisser vide = calcul automatique"></label>
+        </div>
+        <div class="modal-calc"><span>P&amp;L calculé</span><strong id="tradeCalculatedPnl" class="mono">—</strong></div>
+        <div class="modal-actions"><button id="tradeModalCancel" type="button" class="secondary-btn" style="margin:0">Annuler</button><button id="tradeModalSave" type="button" class="primary-btn" style="margin:0">Enregistrer</button></div>
+      </div>
+    </div>
 
-  <script src="./app.js" defer></script>
+    <footer>Outil de sizing et de gestion du risque. Vérifie toujours les spécifications de JP225.cash dans MT5 avant exécution.</footer>
+  </div>
+  <script>
+(() => {
+  const STORAGE_KEY = 'jp225-trading-planner-v1-20';
+  const LEGACY_STORAGE_KEYS = ['jp225-trading-planner-v1-19','jp225-trading-planner-v1-18','jp225-trading-planner-v1-17','jp225-trading-planner-v1-16','jp225-trading-planner-v1-15','jp225-ftmo-cadre-v1-3'];
+  const INSTALL_HINT_KEY = 'jp225-ftmo-install-hint-dismissed';
+
+  const defaults = {
+    balance: 100000,
+    equity: 100000,
+    equityLinked: true,
+    currentLevel: 65000,
+    direction: 1,
+    assetName: 'JP225',
+    usdJpy: 156.5,
+    leverage: 15,
+    contractSize: 10,
+    lotStep: 0.01,
+    riskLimitPct: 1,
+    globalRiskLimitPct: 2,
+    riskPreset1: .25,
+    riskPreset2: .5,
+    riskPreset3: .75,
+    riskPreset4: 1,
+    autoStopPct: .4,
+    beMinR: 1,
+    spreadPts: 0,
+    commissionSide: 0,
+    swapPerLotNight: 0,
+    nights: 0,
+    builderPrice: 65000,
+    builderMargin: 1000,
+    builderLots: 0,
+    builderMode: 'margin',
+    builderStop: 64500,
+    builderTp: 65500,
+    planSimLevel: 65500,
+    riskToolPct: .5,
+    riskToolR: 4,
+    riskToolAutoSl: false,
+    historyPeriod: 'day',
+    historyAsset: 'all',
+    privacyMode: false,
+    entries: [],
+    history: []
+  };
+
+  let state = loadState();
+  let nextEntryId = Math.max(0, ...state.entries.map(e => Number(e.id) || 0)) + 1;
+  let nextHistoryId = Math.max(0, ...state.history.map(e => Number(e.id) || 0)) + 1;
+  let csvPending = null;
+  let modalContext = null;
+  const $ = id => document.getElementById(id);
+
+  const els = {
+    balance:$('balance'), accountEquity:$('accountEquity'), equityToBalance:$('equityToBalance'), floatingPnl:$('floatingPnl'), currentLevel:$('currentLevel'), buyBtn:$('buyBtn'), sellBtn:$('sellBtn'), privacyToggle:$('privacyToggle'),
+    builderPrice:$('builderPrice'), builderMargin:$('builderMargin'), builderLots:$('builderLots'),
+    builderLotsOut:$('builderLotsOut'), builderActualMarginOut:$('builderActualMarginOut'), builderStopRecapOut:$('builderStopRecapOut'), builderTpRecapOut:$('builderTpRecapOut'),
+    builderPointPerLotOut:$('builderPointPerLotOut'), builderPointTotalOut:$('builderPointTotalOut'),
+    builderStop:$('builderStop'), builderTp:$('builderTp'), builderRiskDollar:$('builderRiskDollar'), builderRiskDetail:$('builderRiskDetail'),
+    builderRewardDollar:$('builderRewardDollar'), builderRewardDetail:$('builderRewardDetail'), builderRR:$('builderRR'), builderExitMessage:$('builderExitMessage'),
+    addBuilderToPlan:$('addBuilderToPlan'), riskHelper:$('riskHelper'), riskToolPct:$('riskToolPct'), riskToolR:$('riskToolR'), riskPresetRow:$('riskPresetRow'),
+    riskToolSlUsed:$('riskToolSlUsed'), riskToolAutoSl:$('riskToolAutoSl'), riskProposalMain:$('riskProposalMain'), riskProposalSub:$('riskProposalSub'), riskProposalAlert:$('riskProposalAlert'), applyRiskProposal:$('applyRiskProposal'), closeRiskHelper:$('closeRiskHelper'),
+    planEntries:$('planEntries'), planCount:$('planCount'), totalLots:$('totalLots'), totalPlanMargin:$('totalPlanMargin'), avgEntry:$('avgEntry'), pointTotal:$('pointTotal'),
+    riskDollar:$('riskDollar'), riskPct:$('riskPct'), rewardDollar:$('rewardDollar'), rewardPct:$('rewardPct'), planRR:$('planRR'), riskMessage:$('riskMessage'),
+    planSimLevel:$('planSimLevel'), planDirectionBadge:$('planDirectionBadge'), planSimPnl:$('planSimPnl'), planSimMove:$('planSimMove'), planSimAvg:$('planSimAvg'), planSimLots:$('planSimLots'), planSimPoint:$('planSimPoint'), planSimMargin:$('planSimMargin'), planSimPct:$('planSimPct'),
+    currentPnl:$('currentPnl'), currentPnlMeta:$('currentPnlMeta'), currentEquity:$('currentEquity'), currentMargin:$('currentMargin'), currentFreeMargin:$('currentFreeMargin'), currentMarginLevel:$('currentMarginLevel'), beWarning:$('beWarning'),
+    usdJpy:$('usdJpy'), leverage:$('leverage'), contractSize:$('contractSize'), lotStep:$('lotStep'), riskLimitPct:$('riskLimitPct'), globalRiskLimitPct:$('globalRiskLimitPct'), riskPreset1:$('riskPreset1'), riskPreset2:$('riskPreset2'), riskPreset3:$('riskPreset3'), riskPreset4:$('riskPreset4'), autoStopPct:$('autoStopPct'), beMinR:$('beMinR'), spreadPts:$('spreadPts'), commissionSide:$('commissionSide'), swapPerLotNight:$('swapPerLotNight'), nights:$('nights'), spreadCost:$('spreadCost'), commissionCost:$('commissionCost'), swapCost:$('swapCost'), totalCosts:$('totalCosts'),
+    realizedPnlValue:$('realizedPnlValue'), realizedPnlMeta:$('realizedPnlMeta'), pnlCounterAsset:$('pnlCounterAsset'), toggleHistory:$('toggleHistory'), closeHistory:$('closeHistory'), historyCard:$('historyCard'), historyAssetFilter:$('historyAssetFilter'), historyPeriodFilter:$('historyPeriodFilter'), historyStatPnl:$('historyStatPnl'), historyStatTrades:$('historyStatTrades'), historyStatWin:$('historyStatWin'), historyStatAvg:$('historyStatAvg'), historyList:$('historyList'), csvFileInput:$('csvFileInput'), exportHistoryCsv:$('exportHistoryCsv'), csvMapPanel:$('csvMapPanel'), csvMapMeta:$('csvMapMeta'), csvImportStatus:$('csvImportStatus'), confirmCsvImport:$('confirmCsvImport'), cancelCsvImport:$('cancelCsvImport'), mapCloseDate:$('mapCloseDate'), mapPnl:$('mapPnl'), mapAsset:$('mapAsset'), mapBrokerId:$('mapBrokerId'), mapEntryPrice:$('mapEntryPrice'), mapExitPrice:$('mapExitPrice'), mapLots:$('mapLots'), mapDirection:$('mapDirection'),
+    tradeModal:$('tradeModal'), tradeModalTitle:$('tradeModalTitle'), tradeModalX:$('tradeModalX'), tradeModalCancel:$('tradeModalCancel'), tradeModalSave:$('tradeModalSave'), tradeAsset:$('tradeAsset'), tradeDirection:$('tradeDirection'), tradeEntryPrice:$('tradeEntryPrice'), tradeExitPrice:$('tradeExitPrice'), tradeLots:$('tradeLots'), tradeClosedAt:$('tradeClosedAt'), tradeActualPnl:$('tradeActualPnl'), tradeCalculatedPnl:$('tradeCalculatedPnl'),
+    exportBackupJson:$('exportBackupJson'), backupFileInput:$('backupFileInput'), backupStatus:$('backupStatus'),
+    resetApp:$('resetApp'), installHint:$('installHint'), dismissInstall:$('dismissInstall')
+  };
+
+  hydrateInputs();
+  bindEvents();
+  renderRiskPresets();
+  renderPlanEntries();
+  updateAll();
+  setupInstallHint();
+
+  function num(value, fallback=0){
+    if(typeof value==='number') return Number.isFinite(value)?value:fallback;
+    const cleaned=String(value??'').replace(/\s/g,'').replace(/\u202f/g,'').replace(',','.').replace(/[^0-9.+-]/g,'');
+    const n=Number.parseFloat(cleaned); return Number.isFinite(n)?n:fallback;
+  }
+  function positive(v,f=0){ const n=num(v,f); return n>=0?n:f; }
+  function decimalsFromStep(step){ const s=String(step); return s.includes('.')?Math.min(6,s.split('.')[1].length):0; }
+  function floorToStep(value,step){ const s=step>0?step:.01,d=decimalsFromStep(s),factor=10**d; const units=Math.floor((value*factor+1e-9)/(s*factor)); return (units*s*factor)/factor; }
+  function fmt(n,d=2){ if(!Number.isFinite(n)) return '—'; return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n); }
+  function fmtSmart(n,d=2){ if(!Number.isFinite(n)) return '—'; return new Intl.NumberFormat('fr-FR',{maximumFractionDigits:d}).format(n); }
+  function money(n,d=2,signed=false){ if(!Number.isFinite(n)) return '—'; return `${signed&&n>0?'+':''}${fmt(n,d)} $`; }
+  function pct(n,d=2){ return Number.isFinite(n)?`${fmt(n,d)} %`:'—'; }
+  function inputNumber(n,d=2){ return Number.isFinite(n)?Number(n.toFixed(d)).toString():'0'; }
+  function clampDir(v){ return Number(v)===-1?-1:1; }
+  function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+
+  function pointValuePerLot(){ const fx=positive(state.usdJpy); return fx?positive(state.contractSize)/fx:0; }
+  function marginPerLot(price){ const fx=positive(state.usdJpy), lev=positive(state.leverage); return fx&&lev?positive(price)*positive(state.contractSize)/fx/lev:0; }
+  function costBreakdown(lots){ const pv=pointValuePerLot(); const spread=positive(state.spreadPts)*pv*positive(lots); const commission=positive(state.commissionSide)*positive(lots)*2; const swap=positive(state.swapPerLotNight)*positive(lots)*positive(state.nights); return {spread,commission,swap,total:spread+commission+swap}; }
+  function entryPnl(price,lots,level,includeCosts=true,dir=state.direction){ if(!positive(price)||!positive(lots)||!positive(level)) return 0; const gross=clampDir(dir)*(positive(level)-positive(price))*pointValuePerLot()*positive(lots); return gross-(includeCosts?costBreakdown(lots).total:0); }
+  function normalizedStatus(e){ return e && e.status==='open' ? 'open' : 'planned'; }
+  function openEntries(){ return state.entries.filter(e=>normalizedStatus(e)==='open'); }
+  function plannedEntries(){ return state.entries.filter(e=>normalizedStatus(e)==='planned'); }
+  function lotsFor(entries=state.entries){ return entries.reduce((s,e)=>s+positive(e.lots),0); }
+  function totalLots(){ return lotsFor(state.entries); }
+  function totalPlanMargin(){ return state.entries.reduce((s,e)=>s+marginPerLot(positive(e.price)||state.currentLevel)*positive(e.lots),0); }
+  function avgEntry(entries=state.entries){ const lots=lotsFor(entries); if(!lots) return 0; return entries.reduce((s,e)=>s+positive(e.price)*positive(e.lots),0)/lots; }
+  function planCosts(){ return costBreakdown(totalLots()); }
+  function planPnlAt(level,entries=state.entries){ return entries.reduce((s,e)=>s+entryPnl(e.price,e.lots,level,true,e.direction??state.direction),0); }
+  function planMarginAt(level,entries=state.entries){ return marginPerLot(level)*lotsFor(entries); }
+  function riskCapital(){ return positive(state.equity)||positive(state.balance); }
+
+  function colorize(el,v){ if(!el)return; el.classList.remove('cyan-text','danger-text','amber-text','green-text'); if(v>0.005) el.classList.add('green-text'); else if(v<-0.005) el.classList.add('danger-text'); }
+
+  function hydrateInputs(){
+    ['balance','currentLevel','usdJpy','leverage','contractSize','lotStep','riskLimitPct','globalRiskLimitPct','riskPreset1','riskPreset2','riskPreset3','riskPreset4','autoStopPct','beMinR','spreadPts','commissionSide','swapPerLotNight','nights','builderPrice','builderMargin','builderLots','builderStop','builderTp','planSimLevel'].forEach(k=>{ if(els[k]) els[k].value=state[k]; });
+    els.accountEquity.value=inputNumber(positive(state.equity)||positive(state.balance),2);
+    els.riskToolPct.value=inputNumber(state.riskToolPct,3);
+    els.riskToolR.value=inputNumber(state.riskToolR,2);
+    els.historyPeriodFilter.value=state.historyPeriod;
+    setDirectionUI();
+  }
+
+  function bindNumber(el,key){ if(!el)return; el.addEventListener('input',()=>{ state[key]=positive(el.value); if(['riskPreset1','riskPreset2','riskPreset3','riskPreset4'].includes(key)) renderRiskPresets(); updateAll(); }); }
+  function bindEvents(){
+    els.balance.addEventListener('input',()=>{ const old=positive(state.balance); state.balance=positive(els.balance.value); if(state.equityLinked||Math.abs(positive(state.equity)-old)<.005){state.equity=state.balance;state.equityLinked=true;els.accountEquity.value=inputNumber(state.equity,2);} updateAll(); });
+    els.accountEquity.addEventListener('input',()=>{ state.equity=positive(els.accountEquity.value); state.equityLinked=false; updateAll(); });
+    els.equityToBalance.addEventListener('click',()=>{ state.equity=positive(state.balance); state.equityLinked=true; els.accountEquity.value=inputNumber(state.equity,2); updateAll(); });
+    ['currentLevel','usdJpy','leverage','contractSize','lotStep','riskLimitPct','globalRiskLimitPct','riskPreset1','riskPreset2','riskPreset3','riskPreset4','autoStopPct','beMinR','spreadPts','commissionSide','swapPerLotNight','nights','builderPrice','builderStop','builderTp','planSimLevel'].forEach(k=>bindNumber(els[k],k));
+    els.buyBtn.addEventListener('click',()=>setDirection(1)); els.sellBtn.addEventListener('click',()=>setDirection(-1));
+
+    els.builderMargin.addEventListener('input',()=>{ state.builderMargin=positive(els.builderMargin.value); state.builderMode='margin'; clearActiveMarginChip(); updateAll(); });
+    els.builderLots.addEventListener('input',()=>{ state.builderLots=positive(els.builderLots.value); state.builderMode='lots'; clearActiveMarginChip(); updateAll(); });
+    document.querySelectorAll('.margin-chip').forEach(btn=>btn.addEventListener('click',()=>{ document.querySelectorAll('.margin-chip').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); state.builderMargin=positive(btn.dataset.margin); state.builderMode='margin'; els.builderMargin.value=state.builderMargin; updateAll(); }));
+    document.querySelectorAll('.plan-sim-chip').forEach(btn=>btn.addEventListener('click',()=>{ state.planSimLevel=positive(state.currentLevel)+num(btn.dataset.delta); els.planSimLevel.value=state.planSimLevel; updateAll(); }));
+
+    els.riskToolPct.addEventListener('input',()=>{ state.riskToolPct=positive(els.riskToolPct.value); syncRiskPresetActive(); updateAll(); });
+    els.riskToolR.addEventListener('input',()=>{ state.riskToolR=positive(els.riskToolR.value); syncRToolActive(); updateAll(); });
+    document.querySelectorAll('.r-tool-chip').forEach(btn=>btn.addEventListener('click',()=>{ state.riskToolR=positive(btn.dataset.r); els.riskToolR.value=inputNumber(state.riskToolR,2); syncRToolActive(); updateAll(); }));
+    els.riskToolAutoSl.addEventListener('click',()=>{ state.riskToolAutoSl=!state.riskToolAutoSl; updateAll(); });
+    els.applyRiskProposal.addEventListener('click',applyRiskProposal);
+    els.closeRiskHelper.addEventListener('click',()=>{ els.riskHelper.open=false; });
+
+    els.addBuilderToPlan.addEventListener('click',()=>{
+      const lots=getBuilderLots(), price=positive(state.builderPrice);
+      if(!price||!lots){ flashBuilderButton('Renseigne prix + taille'); return; }
+      state.entries.push({id:nextEntryId++,asset:state.assetName,price,lots,stopLoss:positive(state.builderStop)||null,takeProfit:positive(state.builderTp)||null,status:'planned',direction:state.direction,createdAt:new Date().toISOString(),initialStopLoss:null});
+      renderPlanEntries(); updateAll(); flashBuilderButton('✓ Entrée ajoutée au plan');
+    });
+
+    document.querySelectorAll('.pnl-period-btn').forEach(btn=>btn.addEventListener('click',()=>{ state.historyPeriod=btn.dataset.period; els.historyPeriodFilter.value=state.historyPeriod; updateHistoryUI(); saveState(); }));
+    els.toggleHistory.addEventListener('click',()=>els.historyCard.classList.toggle('hidden-v115'));
+    els.closeHistory.addEventListener('click',()=>els.historyCard.classList.add('hidden-v115'));
+    els.historyAssetFilter.addEventListener('change',()=>{ state.historyAsset=els.historyAssetFilter.value; updateHistoryUI(); saveState(); });
+    els.historyPeriodFilter.addEventListener('change',()=>{ state.historyPeriod=els.historyPeriodFilter.value; updateHistoryUI(); saveState(); });
+    els.csvFileInput.addEventListener('change',handleCsvFile);
+    els.cancelCsvImport.addEventListener('click',cancelCsvImport);
+    els.confirmCsvImport.addEventListener('click',confirmCsvImport);
+    els.exportHistoryCsv.addEventListener('click',exportHistoryCsv);
+    els.exportBackupJson.addEventListener('click',exportFullBackup);
+    els.backupFileInput.addEventListener('change',restoreFullBackup);
+    els.privacyToggle.addEventListener('click',()=>{ state.privacyMode=!state.privacyMode; updatePrivacyUI(); saveState(); });
+
+    [els.tradeModalX,els.tradeModalCancel].forEach(b=>b.addEventListener('click',closeTradeModal));
+    [els.tradeEntryPrice,els.tradeExitPrice,els.tradeLots,els.tradeDirection,els.tradeActualPnl].forEach(el=>el.addEventListener('input',updateTradeModalCalc));
+    els.tradeModalSave.addEventListener('click',saveTradeModal);
+    els.tradeModal.addEventListener('click',e=>{ if(e.target===els.tradeModal) closeTradeModal(); });
+
+    els.resetApp.addEventListener('click',()=>{
+      if(!confirm('Réinitialiser cette version ? Les données locales de v1.20 seront effacées.')) return;
+      state=JSON.parse(JSON.stringify(defaults)); nextEntryId=1; nextHistoryId=1; localStorage.removeItem(STORAGE_KEY); hydrateInputs(); renderRiskPresets(); renderPlanEntries(); updateAll();
+    });
+    els.dismissInstall.addEventListener('click',()=>{ localStorage.setItem(INSTALL_HINT_KEY,'1'); els.installHint.classList.add('hidden'); });
+  }
+
+  function setDirection(dir){ state.direction=clampDir(dir); setDirectionUI(); updateAll(); }
+  function setDirectionUI(){
+    els.buyBtn.classList.toggle('active',state.direction===1); els.sellBtn.classList.toggle('active',state.direction===-1);
+    els.planDirectionBadge.textContent=state.direction===1?'Achat':'Vente'; els.planDirectionBadge.style.color=state.direction===1?'var(--cyan)':'var(--red)'; els.planDirectionBadge.style.borderColor=state.direction===1?'rgba(43,213,196,.55)':'rgba(255,107,115,.55)';
+  }
+  function clearActiveMarginChip(){ document.querySelectorAll('.margin-chip').forEach(b=>b.classList.remove('active')); }
+  function flashBuilderButton(text){ const old='+ Ajouter cette entrée au plan'; els.addBuilderToPlan.textContent=text; setTimeout(()=>els.addBuilderToPlan.textContent=old,1100); }
+
+  function getBuilderLots(){
+    const step=positive(state.lotStep,.01)||.01;
+    if(state.builderMode==='lots') return floorToStep(positive(state.builderLots),step);
+    const mpl=marginPerLot(state.builderPrice); return mpl?floorToStep(positive(state.builderMargin)/mpl,step):0;
+  }
+  function updateBuilderSizing(){
+    const mpl=marginPerLot(state.builderPrice), step=positive(state.lotStep,.01)||.01; let lots=0;
+    if(state.builderMode==='lots'){
+      lots=floorToStep(positive(state.builderLots),step); state.builderMargin=lots*mpl; if(document.activeElement!==els.builderMargin) els.builderMargin.value=inputNumber(state.builderMargin,2);
+    } else {
+      lots=mpl?floorToStep(positive(state.builderMargin)/mpl,step):0; state.builderLots=lots; if(document.activeElement!==els.builderLots) els.builderLots.value=inputNumber(lots,2);
+    }
+    els.builderLotsOut.textContent=lots?`${fmtSmart(lots,2)} lots`:'— lots';
+    els.builderActualMarginOut.textContent=lots?money(lots*mpl,2):'—';
+    els.builderPointPerLotOut.textContent=pointValuePerLot()?`${money(pointValuePerLot(),4)} / point`:'—';
+    els.builderPointTotalOut.textContent=lots?`${money(pointValuePerLot()*lots,4)} / point`:'—';
+  }
+  function updateBuilderExits(){
+    const price=positive(state.builderPrice), lots=getBuilderLots(), sl=positive(state.builderStop), tp=positive(state.builderTp), capital=riskCapital();
+    els.builderStopRecapOut.textContent='—'; els.builderTpRecapOut.textContent='—'; let risk=0,reward=0;
+    if(price&&lots&&sl){ const pnl=entryPnl(price,lots,sl,true,state.direction), pts=state.direction*(sl-price); risk=Math.max(0,-pnl); els.builderStopRecapOut.innerHTML=`${money(pnl,2,true)} <small class="recap-level">(${fmtSmart(sl,2)})</small>`; els.builderRiskDollar.textContent=money(pnl,2,true); els.builderRiskDetail.textContent=`${pts>=0?'+':''}${fmt(pts,1)} pts · ${capital?pct(Math.abs(pnl)/capital*100,3):'—'} de l’equity`; colorize(els.builderRiskDollar,pnl); }
+    else { els.builderRiskDollar.textContent='—'; els.builderRiskDetail.textContent='Renseigne prix, taille et SL'; }
+    if(price&&lots&&tp){ const pnl=entryPnl(price,lots,tp,true,state.direction), pts=state.direction*(tp-price); reward=Math.max(0,pnl); els.builderTpRecapOut.innerHTML=`${money(pnl,2,true)} <small class="recap-level">(${fmtSmart(tp,2)})</small>`; els.builderRewardDollar.textContent=money(pnl,2,true); els.builderRewardDetail.textContent=`${pts>=0?'+':''}${fmt(pts,1)} pts · ${capital?pct(Math.abs(pnl)/capital*100,3):'—'} de l’equity`; colorize(els.builderRewardDollar,pnl); }
+    else { els.builderRewardDollar.textContent='—'; els.builderRewardDetail.textContent='Renseigne prix, taille et TP'; }
+    els.builderRR.textContent=risk>0&&reward>0?`1 : ${fmt(reward/risk,2)}`:'—';
+    els.builderExitMessage.className='status-card';
+    if(!price||!lots){ els.builderExitMessage.innerHTML='<strong>Entrée incomplète.</strong> Renseigne le prix et la taille avant de l’ajouter au plan.'; return; }
+    const badSL=sl&&state.direction*(sl-price)>=0, badTP=tp&&state.direction*(tp-price)<=0;
+    if(badSL||badTP){ els.builderExitMessage.classList.add('warn'); els.builderExitMessage.innerHTML=`<strong>Vérifie les niveaux.</strong> Pour un ${state.direction===1?'achat':'short'}, le SL ou le TP est du mauvais côté.`; return; }
+    const rpct=capital&&risk?risk/capital*100:0, perLimit=positive(state.riskLimitPct);
+    if(risk&&perLimit&&rpct>perLimit){ els.builderExitMessage.classList.add('danger'); els.builderExitMessage.innerHTML=`<strong>Risque ${pct(rpct,2)}.</strong> Ton plafond par trade est ${pct(perLimit,2)}.`; return; }
+    if(isReinforcementInLoss()){
+      els.builderExitMessage.classList.add('warn'); els.builderExitMessage.innerHTML='<strong>Renforcement en perte.</strong> Une position ouverte dans le même sens est actuellement négative. Vérifie le risque global avant d’ajouter.'; return;
+    }
+    if(sl&&tp){ els.builderExitMessage.classList.add('ok'); els.builderExitMessage.innerHTML='<strong>Entrée prête.</strong> Le calcul manuel reste prioritaire ; le sizing risque est seulement une aide facultative.'; }
+    else { els.builderExitMessage.classList.add('warn'); els.builderExitMessage.innerHTML='<strong>SL / TP à compléter.</strong> Complète-les pour voir le risque et le ratio.'; }
+  }
+
+  function renderRiskPresets(){
+    const vals=[state.riskPreset1,state.riskPreset2,state.riskPreset3,state.riskPreset4].map(v=>positive(v)).filter(v=>v>0);
+    els.riskPresetRow.innerHTML=vals.map(v=>`<button type="button" class="mini-chip risk-preset-chip" data-risk="${v}">${fmtSmart(v,3)} %</button>`).join('');
+    els.riskPresetRow.querySelectorAll('.risk-preset-chip').forEach(btn=>btn.addEventListener('click',()=>{ state.riskToolPct=positive(btn.dataset.risk); els.riskToolPct.value=inputNumber(state.riskToolPct,3); syncRiskPresetActive(); updateAll(); }));
+    syncRiskPresetActive();
+  }
+  function syncRiskPresetActive(){ els.riskPresetRow.querySelectorAll('.risk-preset-chip').forEach(b=>b.classList.toggle('active',Math.abs(positive(b.dataset.risk)-positive(state.riskToolPct))<.00001)); }
+  function syncRToolActive(){ document.querySelectorAll('.r-tool-chip').forEach(b=>b.classList.toggle('active',Math.abs(positive(b.dataset.r)-positive(state.riskToolR))<.00001)); }
+  function riskToolProposal(){
+    const price=positive(state.builderPrice), capital=riskCapital(), pctTarget=positive(state.riskToolPct), r=positive(state.riskToolR), step=positive(state.lotStep,.01)||.01;
+    if(!price||!capital||!pctTarget) return {valid:false,reason:'Renseigne le prix et le risque cible.'};
+    let sl=positive(state.builderStop);
+    if(state.riskToolAutoSl){ const d=price*positive(state.autoStopPct)/100; sl=state.direction===1?price-d:price+d; }
+    if(!sl||state.direction*(sl-price)>=0) return {valid:false,reason:'Renseigne un SL valide ou utilise Auto.'};
+    const riskPerLot=Math.max(0,-entryPnl(price,1,sl,true,state.direction));
+    if(!riskPerLot) return {valid:false,reason:'Impossible de calculer le risque par lot avec ces paramètres.'};
+    const targetDollar=capital*pctTarget/100;
+    const lots=floorToStep(targetDollar/riskPerLot,step);
+    if(!lots) return {valid:false,reason:'Le risque cible est trop petit pour le pas de lot actuel.'};
+    const margin=lots*marginPerLot(price);
+    const actualRisk=Math.max(0,-entryPnl(price,lots,sl,true,state.direction));
+    const dist=Math.abs(price-sl);
+    const tp=r? (state.direction===1?price+r*dist:price-r*dist) : 0;
+    const reward=tp?entryPnl(price,lots,tp,true,state.direction):0;
+    const openRisk=openRiskRemainingDollars();
+    const globalAfter=openRisk+actualRisk;
+    const globalPct=capital?globalAfter/capital*100:0;
+    return {valid:true,price,sl,tp,r,lots,margin,targetDollar,actualRisk,reward,openRisk,globalAfter,globalPct,pctActual:capital?actualRisk/capital*100:0,reinforcement:isReinforcementInLoss()};
+  }
+  function updateRiskTool(){
+    els.riskToolAutoSl.classList.toggle('active',!!state.riskToolAutoSl); syncRiskPresetActive(); syncRToolActive();
+    const p=riskToolProposal();
+    const shownSl=p.valid?p.sl:(state.riskToolAutoSl&&positive(state.builderPrice)?(state.direction===1?positive(state.builderPrice)*(1-positive(state.autoStopPct)/100):positive(state.builderPrice)*(1+positive(state.autoStopPct)/100)):positive(state.builderStop));
+    els.riskToolSlUsed.textContent=shownSl?fmt(shownSl,1):'—';
+    if(!p.valid){ els.riskProposalMain.textContent='—'; els.riskProposalSub.textContent=p.reason; els.riskProposalAlert.textContent=''; els.riskProposalAlert.className='risk-proposal-alert'; els.applyRiskProposal.disabled=true; return; }
+    els.applyRiskProposal.disabled=false;
+    els.riskProposalMain.textContent=`${money(p.margin,2)} · ${fmtSmart(p.lots,2)} lots`;
+    els.riskProposalSub.textContent=`Risque ${money(p.actualRisk,2)} (${pct(p.pctActual,3)}) · SL ${fmt(p.sl,1)}${p.tp?` · TP ${fmt(p.tp,1)} · ${fmtSmart(p.r,2)}R`:''}`;
+    const perLimit=positive(state.riskLimitPct), globalLimit=positive(state.globalRiskLimitPct); let msgs=[], level='';
+    if(perLimit&&p.pctActual>perLimit){ msgs.push(`Risque / trade > ${pct(perLimit,2)}`); level='danger'; }
+    if(globalLimit&&p.globalPct>globalLimit){ msgs.push(`Risque global après application : ${pct(p.globalPct,2)} / limite ${pct(globalLimit,2)}`); level='danger'; }
+    else if(globalLimit&&p.globalPct>globalLimit*.8){ msgs.push(`Risque global après : ${pct(p.globalPct,2)} / ${pct(globalLimit,2)}`); if(!level)level='warn'; }
+    else if(globalLimit){ msgs.push(`Risque global après : ${pct(p.globalPct,2)} / ${pct(globalLimit,2)}`); }
+    if(p.reinforcement){ msgs.push('Renforcement d’une position en perte'); if(!level)level='warn'; }
+    els.riskProposalAlert.textContent=msgs.join(' · '); els.riskProposalAlert.className='risk-proposal-alert'+(level?' '+level:'');
+  }
+  function applyRiskProposal(){
+    const p=riskToolProposal(); if(!p.valid)return;
+    state.builderLots=p.lots; state.builderMargin=p.margin; state.builderMode='lots';
+    if(state.riskToolAutoSl) state.builderStop=p.sl;
+    if(p.tp) state.builderTp=p.tp;
+    els.builderLots.value=inputNumber(state.builderLots,2); els.builderMargin.value=inputNumber(state.builderMargin,2); els.builderStop.value=inputNumber(state.builderStop,2); if(p.tp) els.builderTp.value=inputNumber(state.builderTp,2);
+    clearActiveMarginChip(); updateAll();
+    const old=els.applyRiskProposal.textContent; els.applyRiskProposal.textContent='✓ Appliqué'; setTimeout(()=>els.applyRiskProposal.textContent=old,1000);
+  }
+
+  function entryDir(e){ return clampDir(e.direction??state.direction); }
+  function openRiskRemainingDollars(){
+    const level=positive(state.currentLevel), pv=pointValuePerLot(); if(!level||!pv)return 0;
+    return openEntries().reduce((sum,e)=>{ const sl=positive(e.stopLoss), lots=positive(e.lots), d=entryDir(e); if(!sl||!lots)return sum; const adverse=d===1?level-sl:sl-level; return sum+(adverse>0?adverse*pv*lots:0); },0);
+  }
+  function openPnlForDirection(dir){ const level=positive(state.currentLevel); if(!level)return 0; return openEntries().filter(e=>entryDir(e)===dir).reduce((s,e)=>s+entryPnl(e.price,e.lots,level,true,entryDir(e)),0); }
+  function isReinforcementInLoss(){ return openEntries().some(e=>entryDir(e)===state.direction) && openPnlForDirection(state.direction)<-.005; }
+
+  function renderPlanEntries(){
+    els.planEntries.innerHTML='';
+    if(!state.entries.length){ els.planEntries.innerHTML='<div class="plan-empty"><strong>Aucune entrée dans le plan.</strong><br>Prépare-la dans le simulateur ci-dessus puis ajoute-la ici.</div>'; return; }
+    state.entries.forEach((entry,index)=>{
+      const card=document.createElement('div'); card.className='plan-entry-card'; card.dataset.id=entry.id;
+      const margin=marginPerLot(entry.price||state.currentLevel)*positive(entry.lots), dir=entryDir(entry), st=normalizedStatus(entry);
+      card.innerHTML=`
+        <div class="plan-entry-head">
+          <div class="plan-entry-title">Entrée ${index+1}<small>${dir===1?'Achat':'Vente'} · tous les champs restent modifiables</small></div>
+          <div class="plan-entry-actions">
+            <div class="entry-status-toggle" role="group" aria-label="Statut de l’entrée">
+              <button type="button" class="entry-status-btn ${st==='planned'?'active':''}" data-status="planned">Prévue</button>
+              <button type="button" class="entry-status-btn ${st==='open'?'active':''}" data-status="open">Ouverte</button>
+              <button type="button" class="entry-status-btn" data-status="closed">Fermée</button>
+            </div>
+            <button class="plan-entry-remove" aria-label="Supprimer">×</button>
+          </div>
+        </div>
+        <div class="plan-entry-fields">
+          <label class="entry-field"><span>Prix</span><input class="mono pe-price" inputmode="decimal" value="${entry.price||''}"></label>
+          <label class="entry-field"><span>Lots</span><input class="mono pe-lots" inputmode="decimal" value="${entry.lots||''}"></label>
+          <label class="entry-field"><span>$ marge</span><input class="mono pe-margin" inputmode="decimal" value="${inputNumber(margin,2)}"></label>
+          <label class="entry-field"><span>Stop Loss</span><input class="mono pe-stop danger-input" inputmode="decimal" value="${entry.stopLoss||''}"></label>
+          <label class="entry-field"><span>Take Profit</span><input class="mono pe-tp reward-input" inputmode="decimal" value="${entry.takeProfit||''}"></label>
+        </div>
+        <div class="plan-entry-metrics"><div class="plan-mini stop"><span>RISQUE SL</span><strong class="mono pe-risk">—</strong><small class="pe-risk-pts">—</small></div><div class="plan-mini tp"><span>GAIN TP</span><strong class="mono pe-reward">—</strong><small class="pe-reward-pts">—</small></div><div class="plan-mini"><span>RATIO</span><strong class="mono pe-rr">—</strong><small>gain / risque</small></div></div>`;
+      const price=card.querySelector('.pe-price'), lots=card.querySelector('.pe-lots'), marginInput=card.querySelector('.pe-margin'), stop=card.querySelector('.pe-stop'), tp=card.querySelector('.pe-tp');
+      price.addEventListener('input',()=>{ entry.price=positive(price.value); marginInput.value=inputNumber(marginPerLot(entry.price)*positive(entry.lots),2); updateAll(false); });
+      lots.addEventListener('input',()=>{ entry.lots=positive(lots.value); marginInput.value=inputNumber(marginPerLot(entry.price||state.currentLevel)*entry.lots,2); updateAll(false); });
+      marginInput.addEventListener('input',()=>{ const desired=positive(marginInput.value), mpl=marginPerLot(entry.price||state.currentLevel); entry.lots=mpl?floorToStep(desired/mpl,positive(state.lotStep,.01)||.01):0; lots.value=inputNumber(entry.lots,2); updateAll(false); });
+      stop.addEventListener('input',()=>{ entry.stopLoss=stop.value.trim()?positive(stop.value):null; updateAll(false); });
+      tp.addEventListener('input',()=>{ entry.takeProfit=tp.value.trim()?positive(tp.value):null; updateAll(false); });
+      card.querySelectorAll('.entry-status-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        const next=btn.dataset.status;
+        if(next==='closed'){ openTradeModalForEntry(entry); return; }
+        entry.status=next==='open'?'open':'planned';
+        if(entry.status==='open'){
+          entry.openedAt=entry.openedAt||new Date().toISOString();
+          entry.initialStopLoss=entry.initialStopLoss||positive(entry.stopLoss)||null;
+        }
+        renderPlanEntries(); updateAll();
+      }));
+      card.querySelector('.plan-entry-remove').addEventListener('click',()=>{ state.entries=state.entries.filter(e=>e.id!==entry.id); renderPlanEntries(); updateAll(); });
+      els.planEntries.appendChild(card);
+    });
+  }
+  function syncPlanMargins(){ document.querySelectorAll('.plan-entry-card').forEach(card=>{ const e=state.entries.find(x=>String(x.id)===card.dataset.id); if(!e)return; const mi=card.querySelector('.pe-margin'); if(document.activeElement!==mi) mi.value=inputNumber(marginPerLot(e.price||state.currentLevel)*positive(e.lots),2); }); }
+  function updatePlanEntryMetrics(){
+    document.querySelectorAll('.plan-entry-card').forEach(card=>{
+      const e=state.entries.find(x=>String(x.id)===card.dataset.id); if(!e)return; const d=entryDir(e);
+      const riskEl=card.querySelector('.pe-risk'), rewardEl=card.querySelector('.pe-reward'), riskPtsEl=card.querySelector('.pe-risk-pts'), rewardPtsEl=card.querySelector('.pe-reward-pts'), rrEl=card.querySelector('.pe-rr'); let risk=0,reward=0;
+      if(positive(e.price)&&positive(e.lots)&&positive(e.stopLoss)){ const p=entryPnl(e.price,e.lots,e.stopLoss,true,d), pts=d*(e.stopLoss-e.price); risk=Math.max(0,-p); riskEl.textContent=money(p,2,true); colorize(riskEl,p); riskPtsEl.textContent=`${pts>=0?'+':''}${fmt(pts,1)} pts`; } else { riskEl.textContent='—'; riskPtsEl.textContent='SL manquant'; }
+      if(positive(e.price)&&positive(e.lots)&&positive(e.takeProfit)){ const p=entryPnl(e.price,e.lots,e.takeProfit,true,d), pts=d*(e.takeProfit-e.price); reward=Math.max(0,p); rewardEl.textContent=money(p,2,true); colorize(rewardEl,p); rewardPtsEl.textContent=`${pts>=0?'+':''}${fmt(pts,1)} pts`; } else { rewardEl.textContent='—'; rewardPtsEl.textContent='TP manquant'; }
+      rrEl.textContent=risk>0&&reward>0?`1 : ${fmt(reward/risk,2)}`:'—';
+    });
+  }
+  function planExitStats(kind){ if(!state.entries.length)return{complete:false,pnl:0}; let total=0,complete=true; state.entries.forEach(e=>{ const level=kind==='stop'?positive(e.stopLoss):positive(e.takeProfit); if(!positive(e.price)||!positive(e.lots)||!level){complete=false;return;} total+=entryPnl(e.price,e.lots,level,true,entryDir(e)); }); return{complete,pnl:total}; }
+  function updatePlanSummary(){
+    const lots=totalLots(), avg=avgEntry(), margin=totalPlanMargin();
+    els.planCount.textContent=`${state.entries.length} ${state.entries.length>1?'entrées':'entrée'}`; els.totalLots.textContent=lots?`${fmtSmart(lots,2)} lots`:'—'; els.totalPlanMargin.textContent=lots?money(margin,2):'—'; els.avgEntry.textContent=avg?fmt(avg,1):'—'; els.pointTotal.textContent=lots?`${money(pointValuePerLot()*lots,4)} / pt`:'—';
+    const ss=planExitStats('stop'),ts=planExitStats('tp'),risk=ss.complete?Math.max(0,-ss.pnl):0,reward=ts.complete?Math.max(0,ts.pnl):0,balance=positive(state.balance),rp=balance?risk/balance*100:0,gp=balance?reward/balance*100:0;
+    els.riskDollar.textContent=ss.complete?money(-risk,2):'—'; els.riskPct.textContent=ss.complete?`${pct(rp,3)} du solde`:'—'; els.rewardDollar.textContent=ts.complete?money(reward,2,true):'—'; els.rewardPct.textContent=ts.complete?`${pct(gp,3)} du solde`:'—'; els.planRR.textContent=risk>0&&reward>0?`1 : ${fmt(reward/risk,2)}`:'—';
+    els.riskMessage.className='status-card'; if(!state.entries.length){els.riskMessage.innerHTML='<strong>Plan vide.</strong> Ajoute ta première entrée.';return;} if(!ss.complete||!ts.complete){els.riskMessage.classList.add('warn');els.riskMessage.innerHTML='<strong>Plan incomplet.</strong> Une ou plusieurs entrées n’ont pas leur SL ou TP.';return;}
+    const globalLimit=positive(state.globalRiskLimitPct); if(globalLimit&&rp>globalLimit){els.riskMessage.classList.add('danger');els.riskMessage.innerHTML=`<strong>Risque du plan ${pct(rp,2)}.</strong> Limite globale : ${pct(globalLimit,2)}.`;} else {els.riskMessage.classList.add('ok');els.riskMessage.innerHTML=`<strong>Plan cadré.</strong> Risque cumulé : ${money(risk,2)} (${pct(rp,3)} du solde).`;}
+  }
+  function updatePlanScenario(){
+    const all=state.entries,lots=lotsFor(all),level=positive(state.planSimLevel),avg=avgEntry(all),balance=positive(state.balance);
+    if(!lots||!level){['planSimPnl','planSimAvg','planSimLots','planSimPoint','planSimMargin','planSimPct'].forEach(id=>els[id].textContent='—');els.planSimMove.textContent='Ajoute une entrée au plan';return;}
+    const pnl=planPnlAt(level,all),margin=planMarginAt(level,all),pnlPct=balance?pnl/balance*100:0; els.planSimPnl.textContent=money(pnl,2,true);colorize(els.planSimPnl,pnl);els.planSimMove.textContent=avg?`${fmt(state.direction*(level-avg),1)} pts depuis le prix moyen`:'—';els.planSimAvg.textContent=avg?fmt(avg,1):'—';els.planSimLots.textContent=`${fmtSmart(lots,2)} lots`;els.planSimPoint.textContent=`${money(pointValuePerLot()*lots,4)} / point`;els.planSimMargin.textContent=money(margin,2);els.planSimPct.textContent=balance?pct(pnlPct,3):'—';colorize(els.planSimPct,pnl);
+  }
+  function updateCurrentPosition(){
+    const opened=openEntries().filter(e=>positive(e.price)>0&&positive(e.lots)>0),count=opened.length,lots=lotsFor(opened),level=positive(state.currentLevel),eq=riskCapital(),avg=avgEntry(opened);
+    if(!level){els.currentPnl.textContent='—';els.currentPnlMeta.textContent=count?`${count} ouverte${count>1?'s':''} · renseigne le niveau actuel`:'Aucune entrée ouverte';['currentMargin','currentFreeMargin','currentMarginLevel'].forEach(id=>els[id].textContent='—');els.currentEquity.textContent=eq?money(eq,2):'—';updateBeWarning();return;}
+    if(!count||!lots){els.currentPnl.textContent='—';els.currentPnlMeta.textContent='Aucune entrée marquée « Ouverte »';els.currentEquity.textContent=eq?money(eq,2):'—';els.currentMargin.textContent=money(0,2);els.currentFreeMargin.textContent=eq?money(eq,2):'—';els.currentMarginLevel.textContent='—';updateBeWarning();return;}
+    const p=planPnlAt(level,opened),margin=opened.reduce((s,e)=>s+marginPerLot(level)*positive(e.lots),0),free=eq-margin,ml=margin>0?eq/margin*100:Infinity;els.currentPnl.textContent=money(p,2,true);colorize(els.currentPnl,p);els.currentPnlMeta.textContent=`${count} ouverte${count>1?'s':''} · PM ${fmt(avg,1)} → actuel ${fmt(level,1)}`;els.currentEquity.textContent=money(eq,2);els.currentMargin.textContent=money(margin,2);els.currentFreeMargin.textContent=money(free,2);els.currentMarginLevel.textContent=Number.isFinite(ml)?pct(ml,1):'—';updateBeWarning();
+  }
+  function updateBeWarning(){
+    const minR=positive(state.beMinR),level=positive(state.currentLevel); if(!minR||!level){els.beWarning.classList.add('hidden-v115');return;}
+    const early=openEntries().filter(e=>{ const price=positive(e.price),sl=positive(e.stopLoss),initial=positive(e.initialStopLoss),d=entryDir(e); if(!price||!sl||!initial)return false; const atBe=d===1?sl>=price:sl<=price; const dist=Math.abs(price-initial); const rNow=dist?d*(level-price)/dist:999; return atBe&&rNow<minR; });
+    if(!early.length){els.beWarning.classList.add('hidden-v115');return;} els.beWarning.classList.remove('hidden-v115');els.beWarning.innerHTML=`<strong>BE tôt selon ta règle.</strong> ${early.length} entrée${early.length>1?'s ont':' a'} un stop au break-even avant ${fmtSmart(minR,2)}R.`;
+  }
+  function updateAccountEquity(){ const balance=positive(state.balance),equity=riskCapital(),floating=equity-balance;if(document.activeElement!==els.accountEquity)els.accountEquity.value=inputNumber(equity,2);els.floatingPnl.textContent=money(floating,2,true);colorize(els.floatingPnl,floating); }
+  function updateFees(){ const c=planCosts();els.spreadCost.textContent=money(c.spread,2);els.commissionCost.textContent=money(c.commission,2);els.swapCost.textContent=money(c.swap,2);els.totalCosts.textContent=money(c.total,2); }
+
+  // --- Trade closing / realized history ---
+  function toLocalInputValue(date=new Date()){ const d=new Date(date),pad=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+  function openTradeModalForEntry(entry){ modalContext={type:'entry',entryId:entry.id}; els.tradeModalTitle.textContent='Clôturer la position'; els.tradeAsset.value=entry.asset||state.assetName; els.tradeDirection.value=String(entryDir(entry)); els.tradeEntryPrice.value=inputNumber(positive(entry.price),2); els.tradeExitPrice.value=inputNumber(positive(state.currentLevel)||positive(entry.price),2); els.tradeLots.value=inputNumber(positive(entry.lots),2); els.tradeClosedAt.value=toLocalInputValue(); els.tradeActualPnl.value=''; els.tradeModal.classList.remove('hidden-v115'); updateTradeModalCalc(); }
+  function openTradeModalForHistory(id){ const h=state.history.find(x=>String(x.id)===String(id)); if(!h)return; modalContext={type:'history',historyId:h.id}; els.tradeModalTitle.textContent='Modifier le trade réalisé'; els.tradeAsset.value=h.asset||state.assetName; els.tradeDirection.value=String(clampDir(h.direction)); els.tradeEntryPrice.value=inputNumber(positive(h.entryPrice),4); els.tradeExitPrice.value=inputNumber(positive(h.exitPrice),4); els.tradeLots.value=inputNumber(positive(h.lots),4); els.tradeClosedAt.value=toLocalInputValue(h.closedAt||new Date()); els.tradeActualPnl.value=Number.isFinite(Number(h.pnl))?inputNumber(Number(h.pnl),2):''; els.tradeModal.classList.remove('hidden-v115'); updateTradeModalCalc(); }
+  function closeTradeModal(){ els.tradeModal.classList.add('hidden-v115'); modalContext=null; }
+  function modalCalculatedPnl(){ return entryPnl(positive(els.tradeEntryPrice.value),positive(els.tradeLots.value),positive(els.tradeExitPrice.value),true,clampDir(els.tradeDirection.value)); }
+  function updateTradeModalCalc(){ const p=modalCalculatedPnl(); els.tradeCalculatedPnl.textContent=(positive(els.tradeEntryPrice.value)&&positive(els.tradeExitPrice.value)&&positive(els.tradeLots.value))?money(p,2,true):'—'; colorize(els.tradeCalculatedPnl,p); }
+  function saveTradeModal(){
+    const asset=els.tradeAsset.value.trim()||state.assetName, direction=clampDir(els.tradeDirection.value), entryPrice=positive(els.tradeEntryPrice.value), exitPrice=positive(els.tradeExitPrice.value), lots=positive(els.tradeLots.value), closedAt=parseDateFlexible(els.tradeClosedAt.value)?.toISOString();
+    if(!entryPrice||!exitPrice||!lots||!closedAt){ alert('Renseigne prix d’entrée, prix de sortie, taille et date de clôture.'); return; }
+    const calculated=entryPnl(entryPrice,lots,exitPrice,true,direction); const rawActual=els.tradeActualPnl.value.trim(); const pnl=rawActual===''?calculated:num(rawActual,calculated);
+    if(modalContext?.type==='entry'){
+      const entry=state.entries.find(e=>e.id===modalContext.entryId); if(!entry)return;
+      state.history.push({id:nextHistoryId++,asset,source:'manuel',direction,entryPrice,exitPrice,lots,openedAt:entry.openedAt||entry.createdAt||null,closedAt,pnlCalculated:calculated,pnl,stopLoss:entry.stopLoss||null,takeProfit:entry.takeProfit||null});
+      state.entries=state.entries.filter(e=>e.id!==entry.id);
+    } else if(modalContext?.type==='history'){
+      const h=state.history.find(x=>x.id===modalContext.historyId); if(!h)return; Object.assign(h,{asset,direction,entryPrice,exitPrice,lots,closedAt,pnlCalculated:calculated,pnl,source:h.source||'manuel'});
+    }
+    closeTradeModal(); renderPlanEntries(); updateAll(); els.historyCard.classList.remove('hidden-v115');
+  }
+
+  function subtractMonthsClamped(now,months){
+    const d=new Date(now); d.setHours(0,0,0,0);
+    const wantedDay=d.getDate(); d.setDate(1); d.setMonth(d.getMonth()-months);
+    const lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    d.setDate(Math.min(wantedDay,lastDay));
+    return d;
+  }
+  function periodBounds(period,now=new Date()){
+    const end=new Date(now), start=new Date(now); start.setHours(0,0,0,0);
+    if(period==='day') return [start,end];
+    if(period==='week'){ const day=(start.getDay()+6)%7; start.setDate(start.getDate()-day); return [start,end]; }
+    if(period==='30d'){ start.setDate(start.getDate()-29); return [start,end]; }
+    const monthMap={'1m':1,'3m':3,'6m':6,'12m':12,'18m':18,'24m':24};
+    if(monthMap[period]) return [subtractMonthsClamped(now,monthMap[period]),end];
+    return [start,end];
+  }
+  function filteredHistory(){ const [a,b]=periodBounds(state.historyPeriod),asset=state.historyAsset; return state.history.filter(h=>{ const d=new Date(h.closedAt); return Number.isFinite(d.getTime())&&d>=a&&d<=b&&(asset==='all'||h.asset===asset); }).sort((x,y)=>new Date(y.closedAt)-new Date(x.closedAt)); }
+  function periodLabel(p){ const labels={day:'Aujourd’hui',week:'Cette semaine','30d':'30 jours','1m':'1 mois','3m':'3 mois','6m':'6 mois','12m':'12 mois','18m':'18 mois','24m':'24 mois'}; return labels[p]||'Aujourd’hui'; }
+  function updateHistoryUI(){
+    document.querySelectorAll('.pnl-period-btn').forEach(b=>b.classList.toggle('active',b.dataset.period===state.historyPeriod)); els.historyPeriodFilter.value=state.historyPeriod;
+    const assets=[...new Set(state.history.map(h=>String(h.asset||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b)); const prev=state.historyAsset;
+    els.historyAssetFilter.innerHTML='<option value="all">Tous actifs</option>'+assets.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join(''); if(prev!=='all'&&!assets.includes(prev))state.historyAsset='all'; els.historyAssetFilter.value=state.historyAsset;
+    const rows=filteredHistory(),pnl=rows.reduce((s,h)=>s+num(h.pnl),0),wins=rows.filter(h=>num(h.pnl)>.005),losses=rows.filter(h=>num(h.pnl)<-.005),winRate=(wins.length+losses.length)?wins.length/(wins.length+losses.length)*100:NaN,avgWin=wins.length?wins.reduce((s,h)=>s+num(h.pnl),0)/wins.length:0,avgLoss=losses.length?losses.reduce((s,h)=>s+num(h.pnl),0)/losses.length:0;
+    els.realizedPnlValue.textContent=money(pnl,2,true); colorize(els.realizedPnlValue,pnl); els.realizedPnlMeta.textContent=`${periodLabel(state.historyPeriod)} · ${rows.length} trade${rows.length>1?'s':''} · ${state.historyAsset==='all'?'Tous actifs':state.historyAsset}`; els.pnlCounterAsset.textContent=state.historyAsset==='all'?'Tous actifs':state.historyAsset;
+    els.historyStatPnl.textContent=money(pnl,2,true); colorize(els.historyStatPnl,pnl); els.historyStatTrades.textContent=String(rows.length); els.historyStatWin.textContent=Number.isFinite(winRate)?pct(winRate,1):'—'; els.historyStatAvg.textContent=(wins.length||losses.length)?`${money(avgWin,0)} / ${money(avgLoss,0)}`:'—';
+    if(!rows.length){ els.historyList.innerHTML='<div class="empty-history">Aucun trade clôturé dans cette période. Les positions fermées ici ou importées par CSV apparaîtront automatiquement.</div>'; return; }
+    els.historyList.innerHTML=rows.map(h=>{ const d=new Date(h.closedAt),label=d.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),p=num(h.pnl),dir=clampDir(h.direction)===1?'Achat':'Vente'; return `<div class="history-row" data-history-id="${h.id}"><div class="history-row-main"><div class="history-row-title">${esc(h.asset||'Actif')} <small>${dir} · ${esc(h.source||'manuel')}</small></div><div class="history-row-meta">${label}${h.entryPrice?` · ${fmt(positive(h.entryPrice),2)} → ${fmt(positive(h.exitPrice),2)}`:''}${h.lots?` · ${fmtSmart(positive(h.lots),4)} lots`:''}</div></div><div class="history-row-pnl mono privacy-realized ${p>0?'green-text':p<0?'danger-text':''}">${money(p,2,true)}</div><div class="history-row-actions"><button type="button" data-action="edit">Modifier</button><button type="button" data-action="delete">Supprimer</button></div></div>`; }).join('');
+    els.historyList.querySelectorAll('.history-row').forEach(row=>{ row.querySelector('[data-action="edit"]').addEventListener('click',()=>openTradeModalForHistory(row.dataset.historyId)); row.querySelector('[data-action="delete"]').addEventListener('click',()=>{ if(confirm('Supprimer ce trade de l’historique ?')){state.history=state.history.filter(h=>String(h.id)!==String(row.dataset.historyId));updateAll();} }); });
+  }
+
+  // --- CSV import (generic, eToro-friendly after Excel→CSV export) ---
+  function detectDelimiter(text){ const line=(text.split(/\r?\n/).find(l=>l.trim())||''); const candidates=[',',';','\t']; return candidates.map(d=>[d,countDelimited(line,d)]).sort((a,b)=>b[1]-a[1])[0][0]; }
+  function countDelimited(line,d){ let q=false,c=0; for(let i=0;i<line.length;i++){ if(line[i]==='"')q=!q; else if(line[i]===d&&!q)c++; } return c; }
+  function parseCsv(text){ const delimiter=detectDelimiter(text),rows=[]; let row=[],field='',q=false; for(let i=0;i<text.length;i++){ const ch=text[i]; if(ch==='"'){ if(q&&text[i+1]==='"'){field+='"';i++;} else q=!q; } else if(ch===delimiter&&!q){row.push(field);field='';} else if((ch==='\n'||ch==='\r')&&!q){ if(ch==='\r'&&text[i+1]==='\n')i++; row.push(field);field=''; if(row.some(x=>String(x).trim()!==''))rows.push(row); row=[]; } else field+=ch; } row.push(field); if(row.some(x=>String(x).trim()!==''))rows.push(row); if(!rows.length)return{headers:[],rows:[]}; const headers=rows[0].map((h,i)=>String(h).trim()||`Colonne ${i+1}`); return{headers,rows:rows.slice(1).map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??''])))}; }
+  function normHeader(h){ return String(h||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9%$]+/g,' ').trim(); }
+  function findHeader(headers,terms,{exclude=[]}={}){ const hs=headers.map(h=>[h,normHeader(h)]); for(const t of terms){ const nt=normHeader(t); const hit=hs.find(([,n])=>n.includes(nt)&&!exclude.some(x=>n.includes(normHeader(x)))); if(hit)return hit[0]; } return ''; }
+  function mapOptions(select,headers,selected='',required=false){ select.innerHTML=`<option value="">${required?'— choisir —':'— non utilisé —'}</option>`+headers.map(h=>`<option value="${esc(h)}">${esc(h)}</option>`).join(''); if(selected&&headers.includes(selected))select.value=selected; }
+  function handleCsvFile(){ const file=els.csvFileInput.files?.[0]; if(!file)return; const reader=new FileReader(); reader.onload=()=>{ const parsed=parseCsv(String(reader.result||'')); if(!parsed.headers.length){alert('CSV illisible.');return;} csvPending={...parsed,fileName:file.name}; const h=parsed.headers;
+      mapOptions(els.mapCloseDate,h,findHeader(h,['heure de fermeture','date de fermeture','close time','close date','closing time','closed at','date cloture']),true);
+      mapOptions(els.mapPnl,h,findHeader(h,['profit/perte ($)','profit perte $','profit/loss ($)','profit loss $','net profit','p&l','pnl','profit'],{exclude:['%']}),true);
+      mapOptions(els.mapAsset,h,findHeader(h,['instrument','symbol','asset','market','produit','actif']));
+      mapOptions(els.mapBrokerId,h,findHeader(h,['position id','trade id','deal','ticket','id']));
+      mapOptions(els.mapEntryPrice,h,findHeader(h,['taux de change a l ouverture','prix ouverture','open rate','open price','entry price']));
+      mapOptions(els.mapExitPrice,h,findHeader(h,['taux de change a la fermeture','prix fermeture','close rate','close price','exit price']));
+      mapOptions(els.mapLots,h,findHeader(h,['unites','units','volume','lots','taille']));
+      mapOptions(els.mapDirection,h,findHeader(h,['type','direction','sens','action']));
+      els.csvMapMeta.textContent=`${file.name} · ${parsed.rows.length} lignes`; els.csvImportStatus.textContent='Vérifie la date de clôture et le P&L en dollars.'; els.csvMapPanel.classList.remove('hidden-v115'); els.historyCard.classList.remove('hidden-v115');
+    }; reader.readAsText(file); }
+  function cancelCsvImport(){ csvPending=null; els.csvFileInput.value=''; els.csvMapPanel.classList.add('hidden-v115'); }
+  function parseLocaleNumber(v){ let s=String(v??'').trim().replace(/\s|\u202f|\$/g,'').replace(/[()]/g,m=>m==='('?'-':''); if(!s)return NaN; const lastComma=s.lastIndexOf(','),lastDot=s.lastIndexOf('.'); if(lastComma>lastDot){s=s.replace(/\./g,'').replace(',','.');} else if(lastDot>lastComma){s=s.replace(/,/g,'');} else s=s.replace(',','.'); s=s.replace(/[^0-9+\-.]/g,''); const n=Number.parseFloat(s); return Number.isFinite(n)?n:NaN; }
+  function parseDateFlexible(v){ if(v instanceof Date)return Number.isFinite(v.getTime())?v:null; const s=String(v??'').trim(); if(!s)return null; const direct=new Date(s); if(/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(s)&&Number.isFinite(direct.getTime()))return direct; const m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/); if(m){ let y=Number(m[3]); if(y<100)y+=2000; const d=new Date(y,Number(m[2])-1,Number(m[1]),Number(m[4]||0),Number(m[5]||0),Number(m[6]||0)); return Number.isFinite(d.getTime())?d:null; } return Number.isFinite(direct.getTime())?direct:null; }
+  function parseDirection(v){ const n=normHeader(v); if(n.includes('sell')||n.includes('vente')||n.includes('short'))return -1; if(n.includes('buy')||n.includes('achat')||n.includes('long'))return 1; return 1; }
+  function makeImportKey(o){ return o.brokerId?`${o.source}|${o.brokerId}`:`${o.source}|${o.asset}|${o.closedAt}|${Number(o.pnl).toFixed(2)}|${Number(o.exitPrice||0).toFixed(5)}|${Number(o.lots||0).toFixed(5)}`; }
+  function confirmCsvImport(){ if(!csvPending)return; const closeCol=els.mapCloseDate.value,pnlCol=els.mapPnl.value; if(!closeCol||!pnlCol){els.csvImportStatus.textContent='Date de clôture et P&L sont obligatoires.';return;} let added=0,skipped=0,merged=0; const source=/etoro/i.test(csvPending.fileName)?'eToro CSV':'CSV';
+    for(const row of csvPending.rows){ const d=parseDateFlexible(row[closeCol]),p=parseLocaleNumber(row[pnlCol]); if(!d||!Number.isFinite(p)){skipped++;continue;} const o={id:nextHistoryId++,source,brokerId:els.mapBrokerId.value?String(row[els.mapBrokerId.value]||'').trim():'',asset:els.mapAsset.value?String(row[els.mapAsset.value]||'').trim()||state.assetName:state.assetName,closedAt:d.toISOString(),pnl:p,entryPrice:els.mapEntryPrice.value?parseLocaleNumber(row[els.mapEntryPrice.value]):0,exitPrice:els.mapExitPrice.value?parseLocaleNumber(row[els.mapExitPrice.value]):0,lots:els.mapLots.value?parseLocaleNumber(row[els.mapLots.value]):0,direction:els.mapDirection.value?parseDirection(row[els.mapDirection.value]):1}; o.importKey=makeImportKey(o); if(state.history.some(h=>h.importKey&&h.importKey===o.importKey)){skipped++;continue;}
+      const near=state.history.find(h=>h.source==='manuel'&&h.asset===o.asset&&Math.abs(new Date(h.closedAt)-d)<=10*60*1000&&((h.exitPrice&&o.exitPrice&&Math.abs(h.exitPrice-o.exitPrice)<.0001)||Math.abs(num(h.pnl)-p)<.01));
+      if(near){Object.assign(near,{...o,id:near.id,source,importKey:o.importKey});merged++;nextHistoryId--;continue;} state.history.push(o);added++; }
+    els.csvImportStatus.textContent=`${added} ajoutée${added>1?'s':''} · ${merged} rapprochée${merged>1?'s':''} · ${skipped} ignorée${skipped>1?'s':''}`; els.csvFileInput.value=''; csvPending=null; updateAll(); setTimeout(()=>els.csvMapPanel.classList.add('hidden-v115'),1800); }
+  function exportHistoryCsv(){ if(!state.history.length){alert('Aucun historique à exporter.');return;} const headers=['asset','closedAt','direction','entryPrice','exitPrice','lots','pnl','source','brokerId']; const q=v=>`"${String(v??'').replace(/"/g,'""')}"`; const lines=[headers.join(','),...state.history.map(h=>headers.map(k=>q(h[k]??'')).join(','))]; const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`historique-trading-${new Date().toISOString().slice(0,10)}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000); }
+
+  // --- Full local backup / restore (no network) ---
+  function downloadFile(name, content, type='application/json;charset=utf-8'){
+    const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function setBackupStatus(message,kind=''){
+    els.backupStatus.textContent=message; els.backupStatus.className='local-data-status'+(kind?' '+kind:'');
+  }
+  function exportFullBackup(){
+    const payload={format:'jp225-trading-planner-backup',schemaVersion:1,appVersion:'1.18',exportedAt:new Date().toISOString(),state};
+    const stamp=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    downloadFile(`trading-planner-backup-${stamp}.json`,JSON.stringify(payload,null,2));
+    setBackupStatus('Sauvegarde créée. Conserve ce fichier dans Fichiers / iCloud Drive ou ailleurs de ton choix.','ok');
+  }
+  function normalizeState(raw){
+    const s=raw&&typeof raw==='object'?raw:{};
+    const m={...defaults,...s};
+    if(s.equity===undefined||s.equity===null){m.equity=Number(s.balance)||defaults.balance;m.equityLinked=true;}
+    if(s.builderMode==='risk')m.builderMode='margin';
+    m.entries=Array.isArray(s.entries)?s.entries.map(e=>({stopLoss:null,takeProfit:null,asset:m.assetName,direction:m.direction,createdAt:new Date().toISOString(),initialStopLoss:null,...e,status:e.status==='open'?'open':'planned',direction:clampDir(e.direction??m.direction),initialStopLoss:e.initialStopLoss??(e.status==='open'?e.stopLoss:null)})):[];
+    m.history=Array.isArray(s.history)?s.history.map(h=>({...h,asset:String(h.asset||m.assetName),direction:clampDir(h.direction??1),pnl:num(h.pnl,0)})):[];
+    if(m.historyPeriod==='month')m.historyPeriod='1m'; if(m.historyPeriod==='year')m.historyPeriod='12m'; if(!['day','week','30d','1m','3m','6m','12m','18m','24m'].includes(m.historyPeriod))m.historyPeriod='day';
+    m.historyAsset=typeof m.historyAsset==='string'?m.historyAsset:'all';
+    return m;
+  }
+  function restoreFullBackup(){
+    const file=els.backupFileInput.files?.[0]; if(!file)return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const parsed=JSON.parse(String(reader.result||''));
+        if(!parsed||parsed.format!=='jp225-trading-planner-backup'||!parsed.state||typeof parsed.state!=='object') throw new Error('format');
+        const restored=normalizeState(parsed.state);
+        const tradeCount=restored.history.length,entryCount=restored.entries.length;
+        if(!confirm(`Restaurer cette sauvegarde ?\n\n${tradeCount} trade${tradeCount>1?'s':''} réalisé${tradeCount>1?'s':''} · ${entryCount} entrée${entryCount>1?'s':''} active${entryCount>1?'s':''}\n\nLes données locales actuelles de cette version seront remplacées.`)){ els.backupFileInput.value=''; return; }
+        state=restored; nextEntryId=Math.max(0,...state.entries.map(e=>Number(e.id)||0))+1; nextHistoryId=Math.max(0,...state.history.map(e=>Number(e.id)||0))+1;
+        hydrateInputs(); renderRiskPresets(); renderPlanEntries(); updateAll();
+        els.backupFileInput.value='';
+        setBackupStatus(`Sauvegarde restaurée : ${tradeCount} trade${tradeCount>1?'s':''} réalisé${tradeCount>1?'s':''}, ${entryCount} entrée${entryCount>1?'s':''} active${entryCount>1?'s':''}.`,'ok');
+      }catch(_){
+        els.backupFileInput.value=''; setBackupStatus('Ce fichier ne ressemble pas à une sauvegarde Trading Planner valide.','warn');
+      }
+    };
+    reader.onerror=()=>{els.backupFileInput.value='';setBackupStatus('Impossible de lire ce fichier.','warn');};
+    reader.readAsText(file);
+  }
+
+
+  function updatePrivacyUI(){
+    const on=!!state.privacyMode;
+    document.body.classList.toggle('privacy-mode',on);
+    if(els.privacyToggle){
+      els.privacyToggle.classList.toggle('active',on);
+      els.privacyToggle.setAttribute('aria-pressed',on?'true':'false');
+      els.privacyToggle.setAttribute('aria-label',on?'Afficher le P&L réalisé et le solde':'Masquer le P&L réalisé et le solde');
+      els.privacyToggle.title=on?'Afficher le P&L réalisé et le solde':'Masquer le P&L réalisé et le solde';
+    }
+  }
+
+  function updateAll(syncMargins=true){ updatePrivacyUI(); updateAccountEquity(); updateBuilderSizing(); updateBuilderExits(); updateRiskTool(); if(syncMargins)syncPlanMargins(); updatePlanEntryMetrics(); updatePlanSummary(); updatePlanScenario(); updateCurrentPosition(); updateFees(); updateHistoryUI(); setDirectionUI(); saveState(); }
+  function saveState(){ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(_){ } }
+  function loadState(){
+    try{
+      let s=JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if(!s||typeof s!=='object'){
+        for(const key of LEGACY_STORAGE_KEYS){
+          const legacy=JSON.parse(localStorage.getItem(key));
+          if(legacy&&typeof legacy==='object'){s=legacy;break;}
+        }
+      }
+      if(!s)return JSON.parse(JSON.stringify(defaults));
+      return normalizeState(s);
+    }catch(_){return JSON.parse(JSON.stringify(defaults));}
+  }
+  function setupInstallHint(){ const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true,dismissed=localStorage.getItem(INSTALL_HINT_KEY)==='1',isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);if(isIOS&&!standalone&&!dismissed)els.installHint.classList.remove('hidden'); }
+})();
+  </script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+}
+</script>
 </body>
 </html>
