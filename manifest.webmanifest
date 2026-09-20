@@ -1,26 +1,16 @@
 {
-  "name": "Dashboard",
-  "short_name": "Dashboard",
-  "description": "Dashboard local de sizing, risque, structure de plan et suivi réalisé.",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#0b0f14",
-  "theme_color": "#0b0f14",
-  "lang": "fr",
-  "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+  "name":"Dashboard",
+  "short_name":"Dashboard",
+  "description":"Dashboard local de sizing, risque, plan, journal et statistiques multi-actifs.",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "orientation":"portrait-primary",
+  "background_color":"#061017",
+  "theme_color":"#061017",
+  "lang":"fr",
+  "icons":[
+    {"src":"./icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }
