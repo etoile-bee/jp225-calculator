@@ -58,6 +58,218 @@ button,input,select,textarea{font:inherit} button{cursor:pointer} input,select,t
 .hidden{display:none!important}.muted{color:var(--muted)}.tiny{font-size:11px}.center{text-align:center}
 @media(max-width:660px){.app{padding-left:13px;padding-right:13px}.top-title h1{font-size:36px}.version{font-size:11px;padding:8px 9px}.account-grid{grid-template-columns:1fr 1fr}.account-grid .metric:last-child{grid-column:1/-1}.two-panels,.grid2{grid-template-columns:1fr}.risk-gain{grid-template-columns:1fr 1fr}.catalog{grid-template-columns:1fr 1fr}.plan-summary{grid-template-columns:1fr 1fr}.entry-metrics{grid-template-columns:repeat(3,1fr)}.toolbar{grid-template-columns:1fr}.trade-row{grid-template-columns:1.5fr .8fr .8fr auto}.trade-row .hide-mobile{display:none}.stats-main{grid-template-columns:1fr}.mt5-grid{grid-template-columns:repeat(3,1fr)}.compare{grid-template-columns:1fr}.grid4{grid-template-columns:1fr 1fr}.pnl-main{max-width:68%}.spark{width:40%}.account-strip{grid-template-columns:1fr}.account-strip .pricebox{justify-content:space-between}.account-strip input{width:140px}.proposal-num{font-size:28px}}
 @media(max-width:390px){.card{padding:14px}.big-num{font-size:43px}.pnl-main{max-width:72%}.spark{opacity:.55}.risk-gain{grid-template-columns:1fr}.catalog{grid-template-columns:1fr 1fr}.mt5-grid{grid-template-columns:repeat(2,1fr)}.entry-metrics{grid-template-columns:repeat(2,1fr)}.nav{padding-left:8px;padding-right:8px}.nav button{font-size:11px}.tabs .tab{padding:0 12px}}
+
+
+/* ==========================================================
+   iPhone 13 mini / compact iPhone responsive pass
+   Visual design unchanged; only sizing/reflow/overflow fixes.
+   Target viewport: 375 CSS px (also safe down to 320 px).
+   ========================================================== */
+html,body{max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+img,svg,canvas{max-width:100%}
+button,input,select,textarea{max-width:100%}
+.app,.page,.card,.row,.grow,.metric,.field,.asset-card,.asset-group,.entry-card,.setting-row,.trade-row,.proposal-top,.section-title,.pagehead,.top,.top-title,.top-actions{min-width:0}
+.card,.metric,.asset-card,.trade-row,.entry-card{overflow-wrap:anywhere}
+
+@media (max-width:430px){
+  :root{--r:18px;--rs:13px}
+  .app{width:100%;padding:calc(13px + var(--safeTop)) 11px calc(84px + var(--safeBottom))}
+  .page{gap:10px}
+
+  .top{gap:8px;margin:2px 0 0;align-items:flex-start}
+  .top-title{min-width:0;flex:1}
+  .top-title h1{font-size:31px;letter-spacing:-1px;line-height:1}
+  .tagline{font-size:12px;letter-spacing:.045em;margin-top:4px;white-space:normal}
+  .top-actions{gap:5px;flex:0 0 auto}
+  .version{padding:7px 8px;border-radius:11px;font-size:9.5px;font-weight:700}
+  .icon-btn{width:38px;height:38px;border-radius:11px;font-size:18px}
+  .back-btn{width:30px;height:38px;font-size:27px}
+
+  .card{padding:13px;border-radius:18px}
+  .kicker{font-size:9px;letter-spacing:.13em}
+  .sub{font-size:11px;line-height:1.35}
+  .section-title{gap:8px;margin-bottom:10px}
+  .section-title h2{font-size:17px;line-height:1.15}
+
+  .big-num{font-size:34px;letter-spacing:-.8px}
+  .proposal-num{font-size:22px;line-height:1.08;letter-spacing:-.25px}
+  .num{font-weight:650}
+
+  .row{gap:8px}
+  .grid2{gap:8px}
+  .grid3{grid-template-columns:1fr 1fr;gap:8px}
+  .grid3>*:nth-child(3):last-child{grid-column:1/-1}
+  .grid4{grid-template-columns:1fr 1fr;gap:7px}
+  .mini-grid{gap:7px}
+  .divider{margin:8px 0}
+
+  .ico{width:34px;height:34px;border-radius:10px;font-size:17px}
+  .avatar{width:38px;height:38px;border-radius:11px;font-size:16px}
+  .asset-photo .avatar{width:52px;height:52px}
+
+  .btn{min-height:44px;border-radius:12px;padding:0 12px;font-size:13px}
+  .btn.small{min-height:35px;font-size:11px;padding:0 9px}
+  .chip{min-height:38px;border-radius:11px;padding:0 11px;font-size:11px}
+  .chips{gap:6px}
+
+  .field{gap:5px}
+  .field label,.field-label{font-size:10.5px}
+  .input,.select,.textarea{min-height:44px;border-radius:12px;padding:10px 11px;font-size:16px}
+  .textarea{min-height:82px}
+
+  .metric{padding:10px;border-radius:13px}
+  .metric span{font-size:9.5px;margin-bottom:4px}
+  .metric strong{font-size:16px;line-height:1.15}
+  .metric.compact strong{font-size:15px}
+
+  .pnl-card{padding-top:13px}
+  .pnl-main{max-width:64%}
+  .pnl-meta{font-size:10.5px}
+  .spark{right:13px;top:43px;width:38%;height:58px}
+  .eye{right:12px;top:12px}
+  .periods{margin-top:10px}
+  .history-link{font-size:11px;margin-top:8px;padding-top:8px;gap:8px}
+  .history-link span{min-width:0}
+
+  .account-grid{grid-template-columns:1fr 1fr;gap:7px}
+  .account-grid .metric:last-child{grid-column:1/-1}
+  .account-strip{margin-top:8px;padding:7px 9px;grid-template-columns:1fr;gap:5px;border-radius:12px}
+  .account-strip select,.account-strip input{font-size:13px}
+  .account-strip .pricebox{justify-content:space-between;gap:8px}
+  .account-strip .pricebox span{font-size:9.5px}
+  .account-strip input{width:128px;max-width:50%}
+
+  .hero-new .btn{margin-top:8px}
+  .two-panels{grid-template-columns:1fr;gap:8px}
+  .converter{gap:6px}
+  .converter .input{padding-left:9px;padding-right:9px;text-align:center}
+  .swap{width:36px;height:36px;border-radius:10px}
+
+  .proposal-card{padding:13px}
+  .proposal-top{flex-wrap:wrap;gap:8px}
+  .proposal-top>div{flex:1 1 180px;min-width:0}
+  .proposal-top>.btn{flex:0 0 auto;min-height:38px}
+  .pill-row{gap:5px;margin-top:8px}
+  .pillx{font-size:10.5px;padding:6px 8px;border-radius:10px}
+  .riskbar{height:9px;margin-top:9px}
+  .summary-line{padding:6px 0;font-size:11.5px;gap:8px}
+
+  .nav{width:100%;padding:8px 6px calc(6px + var(--safeBottom));gap:2px}
+  .nav button{font-size:10px;gap:2px;min-width:0}
+  .nav button b{font-size:20px}
+
+  .pagehead{gap:6px;margin:0}
+  .pagehead h1{font-size:27px;letter-spacing:-.7px;line-height:1.05}
+  .pagehead .sub{font-size:11.5px;line-height:1.25}
+
+  .tabs{gap:5px}
+  .tab{min-height:38px;padding:0 11px;font-size:11px;border-radius:11px}
+  .seg2,.seg3{gap:6px}
+  .seg-btn{min-height:44px;border-radius:12px;font-size:13px}
+
+  .risk-gain{grid-template-columns:1fr 1fr;gap:8px}
+  .rg{padding:12px;border-radius:14px}
+  .rg .label{font-size:9px;letter-spacing:.11em}
+  .rg strong{font-size:22px;margin-top:5px}
+  .rg small{font-size:10.5px}
+
+  .callout{padding:11px;border-radius:13px;font-size:11.5px;line-height:1.35}
+  .details{border-radius:13px}
+  .details summary{padding:12px;font-size:12px;gap:8px}
+  .details .inside{padding:0 12px 12px}
+  .guard-status{padding:10px 11px;border-radius:12px;gap:8px}
+  .guard-status strong{font-size:12px}
+
+  .mt5{padding:12px;border-radius:15px}
+  .mt5-grid{grid-template-columns:repeat(3,1fr);gap:1px;margin-top:8px;border-radius:10px}
+  .mt5-grid>div{padding:8px 5px}
+  .mt5-grid span{font-size:8.5px}
+  .mt5-grid strong{font-size:12px;margin-top:3px}
+
+  .catalog{grid-template-columns:1fr 1fr;gap:7px}
+  .asset-card{padding:9px;border-radius:13px;gap:8px}
+  .asset-card .meta strong{font-size:12px}
+  .asset-card .meta small{font-size:9.5px;line-height:1.2;display:block}
+
+  .plan-summary{grid-template-columns:1fr 1fr;gap:7px}
+  .asset-group{border-radius:15px}
+  .asset-group-head{padding:11px;gap:8px}
+  .asset-group-head .grow strong{font-size:15px}
+  .asset-group-head .right strong{font-size:13px}
+  .entry-card{padding:10px}
+  .entry-metrics{grid-template-columns:1fr 1fr;gap:6px}
+  .entry-metrics span{font-size:8.5px}
+  .entry-metrics strong{font-size:12px}
+  .status{padding:5px 8px;font-size:9.5px}
+
+  .compare{grid-template-columns:1fr;gap:8px}
+  .compare>div{padding:10px;border-radius:12px}
+  .compare h3{font-size:13px}
+
+  .toolbar{grid-template-columns:1fr;gap:6px}
+  .trade-row{grid-template-columns:minmax(0,1.35fr) minmax(46px,.55fr) minmax(72px,.8fr) 18px;gap:5px;padding:8px;border-radius:12px}
+  .trade-row .hide-mobile{display:none}
+  .trade-row .asset{gap:6px;min-width:0}
+  .trade-row .asset .avatar{width:30px;height:30px;font-size:12px}
+  .trade-row small{font-size:8.5px}
+  .trade-row strong{font-size:11px}
+  .trade-row .pnl{font-size:12px}
+
+  .stats-main{grid-template-columns:1fr;gap:8px}
+  .chart{height:150px;padding:8px;border-radius:13px}
+  .donut{width:94px;height:94px}
+  .donut:after{inset:19px}
+  .barline{grid-template-columns:minmax(80px,.9fr) 1.5fr;gap:8px}
+
+  .setting-row{gap:8px;padding:9px 0;min-width:0}
+  .setting-row strong{font-size:12px}
+  .setting-row small{font-size:10px;line-height:1.25}
+  .setting-row>.row{min-width:0;flex-wrap:wrap;justify-content:flex-end}
+  .switch{width:46px;height:26px;flex:0 0 auto}
+  .switch:before{width:20px;height:20px}
+  .switch.on:before{left:22px}
+  .rule-row{gap:8px;padding:9px 0;font-size:11.5px}
+
+  .modal-wrap{padding:10px;align-items:end}
+  .modal{width:100%;max-height:calc(100dvh - 20px);border-radius:19px;padding:14px}
+  .modal-head{margin-bottom:10px}
+  .modal-head h2{font-size:18px}
+  .x{width:34px;height:34px;border-radius:9px;font-size:18px}
+
+  .toast{width:calc(100% - 22px);bottom:calc(72px + var(--safeBottom));border-radius:14px;padding:11px 12px}
+  .toast p{font-size:11.5px}
+}
+
+@media (max-width:375px){
+  .app{padding-left:10px;padding-right:10px}
+  .card{padding:12px}
+  .top-title h1{font-size:29px}
+  .tagline{font-size:11px}
+  .version{font-size:9px;padding:6px 7px}
+  .icon-btn{width:36px;height:36px}
+  .big-num{font-size:32px}
+  .proposal-num{font-size:21px}
+  .metric strong{font-size:15px}
+  .pnl-main{max-width:66%}
+  .spark{width:36%;opacity:.72}
+  .risk-gain{grid-template-columns:1fr 1fr}
+  .rg strong{font-size:20px}
+  .mt5-grid{grid-template-columns:repeat(2,1fr)}
+  .catalog{grid-template-columns:1fr 1fr}
+  .nav button{font-size:9.5px}
+}
+
+@media (max-width:340px){
+  .top{flex-wrap:wrap}
+  .top-actions{width:100%;justify-content:flex-end}
+  .grid3,.risk-gain,.catalog{grid-template-columns:1fr}
+  .grid3>*:nth-child(3):last-child{grid-column:auto}
+  .pnl-main{max-width:100%}
+  .spark{display:none}
+  .mt5-grid{grid-template-columns:1fr 1fr}
+  .account-grid{grid-template-columns:1fr}
+  .account-grid .metric:last-child{grid-column:auto}
+}
 </style>
 </head>
 <body>
